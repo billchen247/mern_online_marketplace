@@ -32,7 +32,3 @@ performance/results/
 
 # performance outputs
 performance/results/
-
-# local image uploads
-backend/uploads/*
-!backend/uploads/.gitkeep
