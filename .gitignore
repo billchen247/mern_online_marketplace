@@ -23,3 +23,9 @@ npm-debug.log*
 .vscode/
 .claude
 .cursor
+
+server/uploads/
+test-results/
+playwright-report/
+performance/results/
+*.tsbuildinfo
