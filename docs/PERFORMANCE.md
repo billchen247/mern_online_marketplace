@@ -59,11 +59,11 @@ Audits the **production build** served by `vite preview` (port 4173) against the
 | Product detail | 84 | 99 | 96 | 92 | 0.6 s | 4.5 s | 80 ms | 0 |
 | Login `/login` | 94 | 100 | 96 | 91 | 0.6 s | 3.1 s | 30 ms | 0 |
 
-Findings worth acting on (from the failing audits on the home page; not yet fixed):
-- **LCP is the weak spot** (2.8–4.5 s on the mobile profile). The largest element is a product/hero image; images are fetched only after the API data arrives, aren't preloaded, and the seed images are remote URLs. Ideas: `fetchpriority="high"` on the first product image, explicit `width`/`height`, serving resized images (Cloudinary transformations), and prefetching the home payload.
-- **Accessibility 94 on the home page:** failing audits include **color contrast** and **heading order**. Both are small CSS/markup fixes.
-- **`errors-in-console`** failed on the audited pages — worth a look in DevTools.
+Findings worth acting on (read from the Lighthouse JSON; none fixed yet):
+- **LCP is the weak spot** (2.8–4.5 s on the mobile profile). I did not identify the exact LCP element. Contributing factors I can confirm: the seed data uses remote `picsum.photos` images (so image fetch time is outside our control and unrepresentative of Cloudinary), and product images are only requested after the API payload arrives. Ideas to try, then re-measure: `fetchpriority="high"` / explicit dimensions on the first product images, resized images via Cloudinary transformations, and prefetching the home payload.
+- **Accessibility 94 on the home page:** the failing audits are **color contrast** (body text in MUI typography) and **heading order** (an `h6` follows the page's heading levels out of sequence). Both are small CSS/markup fixes.
+- **`errors-in-console`** is a `401 Unauthorized`: on every page load the SPA calls `POST /auth/refresh` to restore a session, and for an anonymous visitor that correctly returns 401, which the browser logs. Harmless functionally but it costs a best-practices point; a non-secret "has session" hint cookie would avoid the call.
 - `robots.txt`, `llms.txt` and the "agentic browsing" category are informational; the app ships no `robots.txt` yet.
-- The JS bundle is split (vendor ~304 kB, MUI ~373 kB, lazy per-page chunks) but MUI is large; the initial payload could shrink with tree-shaken imports and route-level preloading.
+- The JS is split (vendor ~304 kB, MUI ~373 kB, lazy per-page chunks); MUI dominates the initial payload.
 
 These are lab numbers from a laptop, not field data.
