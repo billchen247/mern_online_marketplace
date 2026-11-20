@@ -35,11 +35,11 @@ export function deriveOrderStatus(
   fulfillment: FulfillmentStatus[],
   paymentStatus: 'pending' | 'paid' | 'failed' | 'refunded' | 'partially_refunded',
 ): OrderStatus {
+  const active = fulfillment.filter((s) => s !== 'cancelled');
+  if (fulfillment.length > 0 && active.length === 0) return 'cancelled';
   if (paymentStatus === 'refunded') return 'refunded';
   if (paymentStatus === 'partially_refunded') return 'partially_refunded';
   if (fulfillment.length === 0) return 'pending';
-  const active = fulfillment.filter((s) => s !== 'cancelled');
-  if (active.length === 0) return 'cancelled';
   if (active.every((s) => s === 'delivered')) return 'delivered';
   if (active.every((s) => s === 'shipped' || s === 'delivered')) return 'shipped';
   if (active.some((s) => s === 'shipped' || s === 'delivered')) return 'partially_fulfilled';

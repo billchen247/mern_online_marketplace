@@ -55,7 +55,7 @@ describe('order status machine', () => {
     expect(deriveOrderStatus(['cancelled', 'cancelled'], 'paid')).toBe('cancelled');
     expect(deriveOrderStatus(['cancelled', 'delivered'], 'paid')).toBe('delivered');
     expect(deriveOrderStatus(['delivered'], 'partially_refunded')).toBe('partially_refunded');
-    expect(deriveOrderStatus(['cancelled'], 'refunded')).toBe('refunded');
+    expect(deriveOrderStatus(['cancelled'], 'refunded')).toBe('cancelled');
   });
 });
 

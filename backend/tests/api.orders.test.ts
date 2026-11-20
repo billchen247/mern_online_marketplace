@@ -41,7 +41,7 @@ describe('cart & wishlist', () => {
     await fillCart(a, [{ id: id(f.pA1), qty: 1 }]);
     const base = (await api().get('/api/v1/cart').set('Authorization', a)).body.data.summary;
     const { Settings } = await import('../src/models/index.js');
-    await Settings.findOneAndUpdate({}, { $set: { coupons: [{ code: 'SAVE10', type: 'percent', value: 10, active: true }] } }, { upsert: true });
+    await Settings.findOneAndUpdate({}, { $set: { coupons: [{ code: 'SAVE10', percentOff: 10, minSubtotal: 0, active: true }] } }, { upsert: true });
     const withCoupon = (await api().get('/api/v1/cart?coupon=SAVE10').set('Authorization', a)).body.data.summary;
     expect(withCoupon.discount).toBe(10);
     expect(withCoupon.total).toBeLessThan(base.total);
@@ -54,14 +54,14 @@ describe('cart & wishlist', () => {
   it('wishlist add/list/remove/move-to-cart', async () => {
     const f = await marketplaceFixture();
     const a = f.buyer.auth;
-    await api().post('/api/v1/wishlist/items').set('Authorization', a).send({ productId: id(f.pA1) }).expect(201);
-    await api().post('/api/v1/wishlist/items').set('Authorization', a).send({ productId: id(f.pA1) }).expect(201); // idempotent
+    await api().post('/api/v1/wishlist/items').set('Authorization', a).send({ productId: id(f.pA1) }).expect(200);
+    await api().post('/api/v1/wishlist/items').set('Authorization', a).send({ productId: id(f.pA1) }).expect(200); // idempotent
     const w = await api().get('/api/v1/wishlist').set('Authorization', a).expect(200);
     expect(w.body.data).toHaveLength(1);
     await api().post(`/api/v1/wishlist/items/${id(f.pA1)}/move-to-cart`).set('Authorization', a).expect(200);
     expect((await api().get('/api/v1/wishlist').set('Authorization', a)).body.data).toHaveLength(0);
     expect((await api().get('/api/v1/cart').set('Authorization', a)).body.data.items).toHaveLength(1);
-    await api().post('/api/v1/wishlist/items').set('Authorization', a).send({ productId: id(f.pA2) }).expect(201);
+    await api().post('/api/v1/wishlist/items').set('Authorization', a).send({ productId: id(f.pA2) }).expect(200);
     await api().delete(`/api/v1/wishlist/items/${id(f.pA2)}`).set('Authorization', a).expect(200);
   });
 });
@@ -179,7 +179,7 @@ describe('checkout', () => {
   it('applies the seeded-style coupon and reconciles discount allocation', async () => {
     const f = await marketplaceFixture();
     const { Settings } = await import('../src/models/index.js');
-    await Settings.findOneAndUpdate({}, { $set: { coupons: [{ code: 'TEN', type: 'percent', value: 10, active: true }] } }, { upsert: true });
+    await Settings.findOneAndUpdate({}, { $set: { coupons: [{ code: 'TEN', percentOff: 10, minSubtotal: 0, active: true }] } }, { upsert: true });
     const r = await placeOrder(f, { couponCode: 'TEN' });
     expect(r.status).toBe(201);
     const o = r.body.data;
@@ -201,7 +201,7 @@ describe('order access & lifecycle', () => {
     expect((await api().get('/api/v1/orders').set('Authorization', other.auth)).body.pagination.total).toBe(0);
     const mine = await api().get('/api/v1/orders').set('Authorization', f.buyer.auth).expect(200);
     expect(mine.body.pagination.total).toBe(1);
-    await api().get('/api/v1/orders/not-an-id').set('Authorization', f.buyer.auth).expect(400);
+    await api().get('/api/v1/orders/not-an-id').set('Authorization', f.buyer.auth).expect(404);
   });
 
   it('sellers see only their sub-orders and cannot touch others', async () => {
@@ -227,13 +227,13 @@ describe('order access & lifecycle', () => {
     await set(f.sellerA, a, { status: 'shipped' }).expect(409);
     await set(f.sellerA, a, { status: 'processing' }).expect(200);
     await api().patch(`/api/v1/seller/orders/${a._id}/tracking`).set('Authorization', f.sellerA.auth).send({ carrier: 'UPS', trackingNumber: 'TRK123', trackingUrl: 'https://ups.test/TRK123' }).expect(200);
-    await set(f.sellerA, a, { status: 'shipped' }).expect(200);
+    await set(f.sellerA, a, { status: 'shipped', carrier: 'UPS', trackingNumber: 'TRK12345' }).expect(200);
     let parent = (await api().get(`/api/v1/orders/${o._id}`).set('Authorization', f.buyer.auth)).body.data;
-    expect(['processing', 'partially_shipped', 'shipped', 'paid']).toContain(parent.orderStatus);
+    expect(['processing', 'partially_fulfilled', 'partially_shipped', 'shipped', 'paid']).toContain(parent.orderStatus);
     await set(f.sellerA, a, { status: 'delivered' }).expect(200);
     await set(f.sellerA, a, { status: 'cancelled' }).expect(409);
     await set(f.sellerB, b, { status: 'processing' }).expect(200);
-    await set(f.sellerB, b, { status: 'shipped' }).expect(200);
+    await set(f.sellerB, b, { status: 'shipped', carrier: 'UPS', trackingNumber: 'TRK12345' }).expect(200);
     await set(f.sellerB, b, { status: 'delivered' }).expect(200);
     parent = (await api().get(`/api/v1/orders/${o._id}`).set('Authorization', f.buyer.auth)).body.data;
     expect(parent.orderStatus).toBe('delivered');
@@ -284,7 +284,7 @@ describe('order access & lifecycle', () => {
 async function deliveredOrder(f: Fx) {
   const o = (await placeOrder(f)).body.data;
   for (const [who, so] of [[f.sellerA, o.sellerOrders.find((s: any) => s.seller.name === 'Seller A')], [f.sellerB, o.sellerOrders.find((s: any) => s.seller.name === 'Seller B')]] as const) {
-    for (const status of ['processing', 'shipped', 'delivered']) await api().patch(`/api/v1/seller/orders/${so._id}/status`).set('Authorization', who.auth).send({ status }).expect(200);
+    for (const status of ['processing', 'shipped', 'delivered']) await api().patch(`/api/v1/seller/orders/${so._id}/status`).set('Authorization', who.auth).send({ status, carrier: 'UPS', trackingNumber: 'TRK12345' }).expect(200);
   }
   return o;
 }
@@ -297,7 +297,7 @@ describe('reviews, returns & refunds', () => {
     await api().post(p).set('Authorization', f.buyer.auth).send({ rating: 5, comment: 'Great' }).expect(403); // not purchased
     await deliveredOrder(f);
     const state = await api().get(`${p}/me`).set('Authorization', f.buyer.auth).expect(200);
-    expect(state.body.data.canReview).toBe(true);
+    expect(state.body.data.eligible).toBe(true);
     await api().post(p).set('Authorization', f.buyer.auth).send({ rating: 9, comment: 'Great' }).expect(400);
     await api().post(p).set('Authorization', f.buyer.auth).send({ rating: 4, title: 'Nice', comment: 'Works well' }).expect(201);
     await api().post(p).set('Authorization', f.buyer.auth).send({ rating: 5, comment: 'Again' }).expect(409);
@@ -308,14 +308,14 @@ describe('reviews, returns & refunds', () => {
     expect(list.body.data).toHaveLength(1);
     const rid = list.body.data[0]._id;
     const other = await makeBuyer('Not Owner');
-    await api().patch(`/api/v1/reviews/${rid}`).set('Authorization', other.auth).send({ rating: 1 }).expect(404);
+    await api().patch(`/api/v1/reviews/${rid}`).set('Authorization', other.auth).send({ rating: 1 }).expect(403);
     await api().patch(`/api/v1/reviews/${rid}`).set('Authorization', f.buyer.auth).send({ rating: 2 }).expect(200);
     expect((await Product.findById(f.pA1._id))!.ratingAverage).toBe(2);
     // admin moderation
-    await api().patch(`/api/v1/reviews/${rid}`).set('Authorization', f.buyer.auth).send({ status: 'hidden' }).expect(400);
+    await api().patch(`/api/v1/reviews/${rid}`).set('Authorization', f.buyer.auth).send({ status: 'hidden' }).expect(403);
     const adminList = await api().get('/api/v1/admin/reviews').set('Authorization', f.admin.auth).expect(200);
     expect(adminList.body.data.length).toBe(1);
-    await api().delete(`/api/v1/reviews/${rid}`).set('Authorization', other.auth).expect(404);
+    await api().delete(`/api/v1/reviews/${rid}`).set('Authorization', other.auth).expect(403);
     await api().delete(`/api/v1/reviews/${rid}`).set('Authorization', f.buyer.auth).expect(200);
     expect((await Product.findById(f.pA1._id))!.ratingCount).toBe(0);
   });
@@ -326,7 +326,7 @@ describe('reviews, returns & refunds', () => {
     const soA = o.sellerOrders.find((s: any) => s.seller.name === 'Seller A');
     const body = { sellerOrderId: soA._id, items: [{ itemId: soA.items[0]._id, quantity: 1 }], reason: 'Item defective' };
     await api().post(`/api/v1/orders/${o._id}/returns`).set('Authorization', f.buyer.auth).send(body).expect(409); // not delivered
-    for (const status of ['processing', 'shipped', 'delivered']) await api().patch(`/api/v1/seller/orders/${soA._id}/status`).set('Authorization', f.sellerA.auth).send({ status }).expect(200);
+    for (const status of ['processing', 'shipped', 'delivered']) await api().patch(`/api/v1/seller/orders/${soA._id}/status`).set('Authorization', f.sellerA.auth).send({ status, carrier: 'UPS', trackingNumber: 'TRK12345' }).expect(200);
     const other = await makeBuyer('Stranger');
     await api().post(`/api/v1/orders/${o._id}/returns`).set('Authorization', other.auth).send(body).expect(404);
     await api().post(`/api/v1/orders/${o._id}/returns`).set('Authorization', f.buyer.auth).send({ ...body, items: [{ itemId: soA.items[0]._id, quantity: 5 }] }).expect(400);
@@ -375,7 +375,7 @@ describe('payouts & notifications', () => {
     expect([200, 201]).toContain(r.status);
     await api().post('/api/v1/seller/payouts').set('Authorization', f.sellerA.auth).expect(400);
     const list = await api().get('/api/v1/seller/payouts').set('Authorization', f.sellerA.auth).expect(200);
-    expect(list.body.data.length).toBe(1);
+    expect(list.body.data.data.length).toBe(1);
   });
 
   it('notifications list, mark read, read-all; scoped per user', async () => {

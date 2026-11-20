@@ -25,7 +25,8 @@ export async function view(userId: string, couponCode?: string) {
   const byId = new Map(products.map((p) => [String(p._id), p]));
   const items = cart.items.map((i) => {
     const p = byId.get(String(i.product));
-    const available = Boolean(p && !p.deletedAt && p.status === 'active' && !hidden.has(String((p.shop as any)?._id ?? p.shop)));
+    const live = Boolean(p && !p.deletedAt && p.status === 'active' && !hidden.has(String((p.shop as any)?._id ?? p.shop)));
+    const available = live && p!.stock >= 1;
     return {
       id: String(i._id),
       quantity: i.quantity,
@@ -43,7 +44,7 @@ export async function view(userId: string, couponCode?: string) {
           }
         : null,
       available,
-      issue: !available ? 'This product is no longer available' : p!.stock < i.quantity ? `Only ${p!.stock} left in stock` : null,
+      issue: !live ? 'This product is no longer available' : p!.stock < i.quantity ? `Only ${p!.stock} left in stock` : null,
     };
   });
   const settings = await getSettings();
@@ -73,7 +74,7 @@ export async function addItem(userId: string, productId: string, quantity: numbe
   const cart = await getOrCreate(userId);
   const existing = cart.items.find((i) => String(i.product) === String(p._id));
   const newQty = (existing?.quantity ?? 0) + quantity;
-  if (newQty > p.stock) throw ApiError.badRequest(p.stock === 0 ? 'Product is out of stock' : `Only ${p.stock} available in stock`, undefined, 'INSUFFICIENT_STOCK');
+  if (newQty > p.stock) throw ApiError.conflict(p.stock === 0 ? 'Product is out of stock' : `Only ${p.stock} available in stock`, 'INSUFFICIENT_STOCK');
   if (newQty > 99) throw ApiError.badRequest('Maximum quantity per item is 99');
   if (existing) existing.quantity = newQty;
   else cart.items.push({ product: p._id, shop: p.shop, seller: p.seller, quantity } as any);
@@ -86,7 +87,7 @@ export async function updateItem(userId: string, itemId: string, quantity: numbe
   const item = cart.items.id(itemId);
   if (!item) throw ApiError.notFound('Cart item not found');
   const p = await purchasable(String(item.product), userId);
-  if (quantity > p.stock) throw ApiError.badRequest(`Only ${p.stock} available in stock`, undefined, 'INSUFFICIENT_STOCK');
+  if (quantity > p.stock) throw ApiError.conflict(`Only ${p.stock} available in stock`, 'INSUFFICIENT_STOCK');
   item.quantity = quantity;
   await cart.save();
   return view(userId);

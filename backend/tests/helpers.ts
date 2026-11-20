@@ -7,7 +7,7 @@ import { signAccessToken } from '../src/utils/tokens.js';
 export const app = createApp();
 export const api = () => request(app);
 
-export async function makeUser(name: string, roles: string[] = ['user'], extra: Record<string, unknown> = {}) {
+export async function makeUser(name: string, roles: ('user' | 'seller' | 'admin')[] = ['user'], extra: Record<string, unknown> = {}) {
   const user = await User.create({
     name,
     email: `${name.toLowerCase().replace(/\W+/g, '.')}@test.dev`,
@@ -27,7 +27,7 @@ export async function makeCategory(name = 'Electronics') {
   return Category.create({ name, slug: name.toLowerCase().replace(/\W+/g, '-') });
 }
 
-export async function makeShop(sellerId: string, name = 'Shop One', status = 'active') {
+export async function makeShop(sellerId: string, name = 'Shop One', status: 'active' | 'inactive' | 'suspended' | 'pending' = 'active') {
   return Shop.create({ seller: sellerId, name, slug: `${name.toLowerCase().replace(/\W+/g, '-')}-${Math.random().toString(36).slice(2, 6)}`, status });
 }
 

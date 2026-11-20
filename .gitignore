@@ -24,7 +24,7 @@ npm-debug.log*
 .claude
 .cursor
 
-server/uploads/
+backend/uploads/
 test-results/
 playwright-report/
 performance/results/
