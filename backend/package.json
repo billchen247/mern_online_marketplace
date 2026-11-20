@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
-    "seed": "tsx src/scripts/seed.ts"
+    "seed": "tsx src/scripts/seed.ts",
+    "dev:memory": "tsx src/scripts/devMemory.ts"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",

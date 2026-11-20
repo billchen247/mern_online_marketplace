@@ -7,7 +7,7 @@ export default defineConfig({
   server: {
     port: 5173,
     // Dev convenience: forward local uploads from the API server.
-    proxy: { '/uploads': 'http://localhost:5000' },
+    proxy: { '/uploads': process.env.VITE_API_PROXY_TARGET ?? 'http://localhost:5000' },
   },
   build: {
     rollupOptions: {

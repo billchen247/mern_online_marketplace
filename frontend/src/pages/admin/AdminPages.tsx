@@ -254,7 +254,7 @@ export function AdminCategoriesPage() {
           <DialogContent><Stack spacing={2} sx={{ mt: 1 }}>
             <FormText label="Name" fieldError={errors.name} {...register('name')} />
             <FormText label="Description" multiline minRows={2} fieldError={errors.description} {...register('description')} />
-            <Controller name="parentCategory" control={control} render={({ field }) => <TextField select size="small" label="Parent category" {...field} value={field.value ?? ''}><MenuItem value="">None</MenuItem>{state.data?.filter((c) => edit === 'new' || c._id !== (edit as Category | null)?._id).map((c) => <MenuItem key={c._id} value={c._id}>{c.name}</MenuItem>)}</TextField>} />
+            <Controller name="parentCategory" control={control} render={({ field }) => <TextField select size="small" label="Parent category" {...field} value={field.value ?? ''}><MenuItem value="">None</MenuItem>{(state.data ?? []).filter((c) => edit === 'new' || c._id !== (edit as Category | null)?._id).map((c) => <MenuItem key={c._id} value={c._id}>{c.name}</MenuItem>)}</TextField>} />
             <Controller name="status" control={control} render={({ field }) => <TextField select size="small" label="Status" {...field}><MenuItem value="active">Active</MenuItem><MenuItem value="inactive">Inactive</MenuItem></TextField>} />
           </Stack></DialogContent>
           <DialogActions><Button onClick={() => setEdit(null)}>Cancel</Button><Button type="submit" variant="contained" disabled={busy}>Save</Button></DialogActions>

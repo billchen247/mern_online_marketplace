@@ -35,7 +35,7 @@ export function SellerProductsPage() {
       <PageHeader title="Products" actions={<Button component={RouterLink} to="/seller/products/new" variant="contained" startIcon={<Add />}>Add product</Button>} />
       <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
         <TextField size="small" label="Search products" value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} />
-        <TextField select size="small" label="Shop" value={shop} onChange={(e) => { setShop(e.target.value); setPage(1); }} sx={{ minWidth: 180 }}><MenuItem value="">All shops</MenuItem>{shops.data?.map((s) => <MenuItem key={s._id} value={s._id}>{s.name}</MenuItem>)}</TextField>
+        <TextField select size="small" label="Shop" value={shop} onChange={(e) => { setShop(e.target.value); setPage(1); }} sx={{ minWidth: 180 }}><MenuItem value="">All shops</MenuItem>{(shops.data ?? []).map((s) => <MenuItem key={s._id} value={s._id}>{s.name}</MenuItem>)}</TextField>
       </Stack>
       <AsyncView state={state}>
         {(r) => r.data.length === 0 ? <EmptyState title="No products" description="Add your first product to start selling." /> : (
@@ -88,14 +88,14 @@ export function SellerProductFormPage() {
     <>
       <PageHeader title={editing ? 'Edit product' : 'Add product'} />
       {noShops && <Alert severity="warning" sx={{ mb: 2 }}>You need a shop before adding products. <Link component={RouterLink} to="/seller/shops/new">Create a shop</Link></Alert>}
-      <AsyncView state={existing}>
+      <AsyncView state={existing} allowNull>
         {(p) => (
           <Box component="form" noValidate onSubmit={submit} sx={{ maxWidth: 760 }}>
             <Stack spacing={2}>
               {p && Boolean(p.status === 'blocked') && <Alert severity="error">This product was blocked by a moderator and cannot be sold.</Alert>}
               <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-                <Controller name="shop" control={control} render={({ field, fieldState }) => <TextField select fullWidth size="small" label="Shop" {...field} disabled={editing} error={Boolean(fieldState.error)} helperText={fieldState.error?.message}>{shops.data?.filter((s) => s.status !== 'suspended').map((s) => <MenuItem key={s._id} value={s._id}>{s.name}</MenuItem>)}</TextField>} />
-                <Controller name="category" control={control} render={({ field, fieldState }) => <TextField select fullWidth size="small" label="Category" {...field} error={Boolean(fieldState.error)} helperText={fieldState.error?.message}>{cats.data?.map((c) => <MenuItem key={c._id} value={c._id}>{c.name}</MenuItem>)}</TextField>} />
+                <Controller name="shop" control={control} render={({ field, fieldState }) => <TextField select fullWidth size="small" label="Shop" {...field} disabled={editing} error={Boolean(fieldState.error)} helperText={fieldState.error?.message}>{(shops.data ?? []).filter((s) => s.status !== 'suspended').map((s) => <MenuItem key={s._id} value={s._id}>{s.name}</MenuItem>)}</TextField>} />
+                <Controller name="category" control={control} render={({ field, fieldState }) => <TextField select fullWidth size="small" label="Category" {...field} error={Boolean(fieldState.error)} helperText={fieldState.error?.message}>{(cats.data ?? []).map((c) => <MenuItem key={c._id} value={c._id}>{c.name}</MenuItem>)}</TextField>} />
               </Stack>
               <FormText label="Product name" fieldError={errors.name} {...register('name')} />
               <FormText label="Description" multiline minRows={4} fieldError={errors.description} {...register('description')} />

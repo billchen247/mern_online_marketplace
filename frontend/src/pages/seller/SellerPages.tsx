@@ -115,7 +115,7 @@ export function SellerShopFormPage() {
   return (
     <>
       <PageHeader title={editing ? 'Edit shop' : 'Create shop'} />
-      <AsyncView state={shop}>
+      <AsyncView state={shop} allowNull>
         {() => (
           <Box component="form" noValidate onSubmit={submit} sx={{ maxWidth: 640 }}>
             <Stack spacing={2}>

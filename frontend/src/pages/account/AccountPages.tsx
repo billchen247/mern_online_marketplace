@@ -133,7 +133,7 @@ export function BecomeSellerPage() {
   return (
     <>
       <PageHeader title="Become a seller" subtitle="Apply to open shops and sell on the marketplace. An administrator reviews every application." />
-      <AsyncView state={app}>
+      <AsyncView state={app} allowNull>
         {() => (
           <Stack spacing={3} sx={{ maxWidth: 560 }}>
             {a && (
