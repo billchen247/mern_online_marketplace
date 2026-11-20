@@ -29,3 +29,6 @@ test-results/
 playwright-report/
 performance/results/
 *.tsbuildinfo
+
+# performance outputs
+performance/results/

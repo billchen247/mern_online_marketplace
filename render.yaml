@@ -1,0 +1,51 @@
+# Render Blueprint. Secrets (sync: false) are entered in the Render dashboard and are never committed.
+services:
+  - type: web
+    name: marketplace-api
+    runtime: node
+    plan: free
+    rootDir: .
+    buildCommand: npm ci --include=dev && npm run build -w backend
+    startCommand: npm run start -w backend
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: 22
+      # Render injects PORT; the server binds to 0.0.0.0:$PORT.
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      # Public URL of the static site below, e.g. https://marketplace-web.onrender.com
+      - key: CLIENT_URL
+        sync: false
+      # Frontend and API are on different onrender.com sites, so the refresh cookie must be cross-site.
+      - key: COOKIE_SAMESITE
+        value: none
+      - key: COOKIE_SECURE
+        value: "true"
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+
+  - type: web
+    name: marketplace-web
+    runtime: static
+    rootDir: .
+    buildCommand: npm ci --include=dev && npm run build -w frontend
+    staticPublishPath: frontend/dist
+    envVars:
+      # e.g. https://marketplace-api.onrender.com/api/v1  (baked in at build time)
+      - key: VITE_API_BASE_URL
+        sync: false
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
