@@ -1,6 +1,27 @@
 import type {
-  AdminDashboard, Address, Cart, Category, Earnings, HomeData, Notification, Order, Paged, Payout, Product, ProductQuery, PublicSettings,
-  ReturnRequest, Review, SellerApplication, SellerDashboard, SellerOrder, Settings, Shop, TrendPoint, User, ImageRef,
+  AdminDashboard,
+  Address,
+  Cart,
+  Category,
+  Earnings,
+  HomeData,
+  Notification,
+  Order,
+  Paged,
+  Payout,
+  Product,
+  ProductQuery,
+  PublicSettings,
+  ReturnRequest,
+  Review,
+  SellerApplication,
+  SellerDashboard,
+  SellerOrder,
+  Settings,
+  Shop,
+  TrendPoint,
+  User,
+  ImageRef,
 } from '../types';
 import { api, unwrap, unwrapPaged } from './client';
 
@@ -31,8 +52,10 @@ export const catalogApi = {
   shop: (id: string) => get<Shop>(`/shops/${id}`),
   reviews: (id: string, page = 1) => getPaged<Review>(`/products/${id}/reviews`, { page, limit: 10 }),
   reviewState: (id: string) => get<{ eligible: boolean; hasPurchased: boolean; review: Review | null }>(`/products/${id}/reviews/me`),
-  createReview: (id: string, b: { rating: number; title?: string; comment: string }) => unwrap<Review>(api.post(`/products/${id}/reviews`, b)),
-  updateReview: (id: string, b: Partial<{ rating: number; title: string; comment: string }>) => unwrap<Review>(api.patch(`/reviews/${id}`, b)),
+  createReview: (id: string, b: { rating: number; title?: string; comment: string }) =>
+    unwrap<Review>(api.post(`/products/${id}/reviews`, b)),
+  updateReview: (id: string, b: Partial<{ rating: number; title: string; comment: string }>) =>
+    unwrap<Review>(api.patch(`/reviews/${id}`, b)),
   deleteReview: (id: string) => unwrap<null>(api.delete(`/reviews/${id}`)),
 };
 
@@ -46,8 +69,11 @@ export const userApi = {
   notifications: (page = 1) => getPaged<Notification>('/notifications', { page, limit: 20 }),
   readAllNotifications: () => unwrap<null>(api.post('/notifications/read-all')),
   readNotification: (id: string) => unwrap<Notification>(api.patch(`/notifications/${id}/read`)),
-  applyToSell: (b: { businessName: string; businessDescription: string; contactInformation: { email: string; phone: string; address?: string } }) =>
-    unwrap<SellerApplication>(api.post('/seller-applications', b)),
+  applyToSell: (b: {
+    businessName: string;
+    businessDescription: string;
+    contactInformation: { email: string; phone: string; address?: string };
+  }) => unwrap<SellerApplication>(api.post('/seller-applications', b)),
   myApplication: () => get<SellerApplication | null>('/seller-applications/me'),
 };
 
@@ -73,7 +99,8 @@ export interface CheckoutInput {
 }
 export const orderApi = {
   /** The idempotency key makes retries/double-clicks safe: the server returns the original order. */
-  checkout: (b: CheckoutInput, idempotencyKey: string) => unwrap<Order>(api.post('/orders/checkout', b, { headers: { 'Idempotency-Key': idempotencyKey } })),
+  checkout: (b: CheckoutInput, idempotencyKey: string) =>
+    unwrap<Order>(api.post('/orders/checkout', b, { headers: { 'Idempotency-Key': idempotencyKey } })),
   list: (page = 1, status?: string) => getPaged<Order>('/orders', { page, limit: 10, status }),
   get: (id: string) => get<Order>(`/orders/${id}`),
   cancel: (id: string, reason?: string) => unwrap<{ order: Order }>(api.post(`/orders/${id}/cancel`, { reason })),
@@ -109,13 +136,18 @@ export const sellerApi = {
   createShop: (b: ShopInput) => unwrap<Shop>(api.post('/seller/shops', b)),
   updateShop: (id: string, b: Partial<ShopInput>) => unwrap<Shop>(api.patch(`/seller/shops/${id}`, b)),
   deleteShop: (id: string) => unwrap<Shop>(api.delete(`/seller/shops/${id}`)),
-  products: (q: { page?: number; limit?: number; search?: string; shop?: string; status?: string; lowStock?: boolean } = {}) => getPaged<Product>('/seller/products', q),
+  products: (q: { page?: number; limit?: number; search?: string; shop?: string; status?: string; lowStock?: boolean } = {}) =>
+    getPaged<Product>('/seller/products', q),
   product: (id: string) => get<Product>(`/seller/products/${id}`),
   createProduct: (b: ProductInput) => unwrap<Product>(api.post('/seller/products', b)),
   updateProduct: (id: string, b: Partial<ProductInput>) => unwrap<Product>(api.patch(`/seller/products/${id}`, b)),
   deleteProduct: (id: string) => unwrap<null>(api.delete(`/seller/products/${id}`)),
-  adjustStock: (id: string, b: { adjustment?: number; set?: number; note?: string }) => unwrap<Product>(api.patch(`/seller/products/${id}/stock`, b)),
-  inventory: (id: string) => get<{ _id: string; delta: number; stockAfter: number; reason: string; note?: string; createdAt: string }[]>(`/seller/products/${id}/inventory`),
+  adjustStock: (id: string, b: { adjustment?: number; set?: number; note?: string }) =>
+    unwrap<Product>(api.patch(`/seller/products/${id}/stock`, b)),
+  inventory: (id: string) =>
+    get<{ _id: string; delta: number; stockAfter: number; reason: string; note?: string; createdAt: string }[]>(
+      `/seller/products/${id}/inventory`,
+    ),
   upload: async (files: File[]): Promise<ImageRef[]> => {
     const fd = new FormData();
     files.forEach((f) => fd.append('images', f));
@@ -123,11 +155,18 @@ export const sellerApi = {
   },
   orders: (q: { page?: number; limit?: number; status?: string; search?: string } = {}) => getPaged<SellerOrder>('/seller/orders', q),
   order: (id: string) => get<SellerOrder>(`/seller/orders/${id}`),
-  updateOrderStatus: (id: string, b: { status: string; carrier?: string; trackingNumber?: string; trackingUrl?: string }) => unwrap<SellerOrder>(api.patch(`/seller/orders/${id}/status`, b)),
-  updateTracking: (id: string, b: { carrier: string; trackingNumber: string; trackingUrl?: string }) => unwrap<SellerOrder>(api.patch(`/seller/orders/${id}/tracking`, b)),
+  updateOrderStatus: (id: string, b: { status: string; carrier?: string; trackingNumber?: string; trackingUrl?: string }) =>
+    unwrap<SellerOrder>(api.patch(`/seller/orders/${id}/status`, b)),
+  updateTracking: (id: string, b: { carrier: string; trackingNumber: string; trackingUrl?: string }) =>
+    unwrap<SellerOrder>(api.patch(`/seller/orders/${id}/tracking`, b)),
   dashboard: () => get<SellerDashboard>('/seller/dashboard'),
   analytics: (days = 30) =>
-    get<{ days: number; salesTrend: TrendPoint[]; topProducts: { _id: string; name: string; units: number; revenue: number }[]; revenueByShop: { _id: string; name?: string; revenue: number }[] }>('/seller/analytics', { days }),
+    get<{
+      days: number;
+      salesTrend: TrendPoint[];
+      topProducts: { _id: string; name: string; units: number; revenue: number }[];
+      revenueByShop: { _id: string; name?: string; revenue: number }[];
+    }>('/seller/analytics', { days }),
   earnings: (page = 1) => get<Earnings>('/seller/earnings', { page, limit: 10 }),
   payouts: (page = 1) => get<{ simulated: boolean } & Paged<Payout>>('/seller/payouts', { page, limit: 10 }),
   requestPayout: () => unwrap<Payout>(api.post('/seller/payouts')),
@@ -138,16 +177,25 @@ export interface AdminUserRow extends User {
 }
 export const adminApi = {
   dashboard: () => get<AdminDashboard>('/admin/dashboard'),
-  users: (q: { page?: number; search?: string; role?: string; status?: string }) => getPaged<User & { _id: string }>('/admin/users', { ...q, limit: 15 }),
+  users: (q: { page?: number; search?: string; role?: string; status?: string }) =>
+    getPaged<User & { _id: string }>('/admin/users', { ...q, limit: 15 }),
   user: (id: string) => get<User & { _id: string }>(`/admin/users/${id}`),
-  updateUser: (id: string, b: { status?: string; addRoles?: string[]; removeRoles?: string[] }) => unwrap<User>(api.patch(`/admin/users/${id}`, b)),
+  updateUser: (id: string, b: { status?: string; addRoles?: string[]; removeRoles?: string[] }) =>
+    unwrap<User>(api.patch(`/admin/users/${id}`, b)),
   applications: (q: { page?: number; status?: string }) => getPaged<SellerApplication>('/admin/seller-applications', { ...q, limit: 15 }),
-  reviewApplication: (id: string, b: { status: 'approved' | 'rejected'; reviewNotes?: string }) => unwrap<SellerApplication>(api.patch(`/admin/seller-applications/${id}`, b)),
-  sellers: (q: { page?: number; search?: string }) => getPaged<{ id: string; name: string; email: string; roles: string[]; status: string; shops: number }>('/admin/sellers', { ...q, limit: 15 }),
-  updateSeller: (id: string, b: { action: 'suspend' | 'reactivate'; notes?: string }) => unwrap<unknown>(api.patch(`/admin/sellers/${id}`, b)),
+  reviewApplication: (id: string, b: { status: 'approved' | 'rejected'; reviewNotes?: string }) =>
+    unwrap<SellerApplication>(api.patch(`/admin/seller-applications/${id}`, b)),
+  sellers: (q: { page?: number; search?: string }) =>
+    getPaged<{ id: string; name: string; email: string; roles: string[]; status: string; shops: number }>('/admin/sellers', {
+      ...q,
+      limit: 15,
+    }),
+  updateSeller: (id: string, b: { action: 'suspend' | 'reactivate'; notes?: string }) =>
+    unwrap<unknown>(api.patch(`/admin/sellers/${id}`, b)),
   shops: (q: { page?: number; search?: string; status?: string; seller?: string }) => getPaged<Shop>('/admin/shops', { ...q, limit: 15 }),
   updateShop: (id: string, status: string) => unwrap<Shop>(api.patch(`/admin/shops/${id}`, { status })),
-  products: (q: { page?: number; search?: string; status?: string; shop?: string; seller?: string }) => getPaged<Product>('/admin/products', { ...q, limit: 15 }),
+  products: (q: { page?: number; search?: string; status?: string; shop?: string; seller?: string }) =>
+    getPaged<Product>('/admin/products', { ...q, limit: 15 }),
   updateProduct: (id: string, b: { status?: string; featured?: boolean }) => unwrap<Product>(api.patch(`/admin/products/${id}`, b)),
   categories: () => get<Category[]>('/admin/categories'),
   createCategory: (b: Partial<Category>) => unwrap<Category>(api.post('/admin/categories', b)),
@@ -157,7 +205,8 @@ export const adminApi = {
   order: (id: string) => get<Order>(`/admin/orders/${id}`),
   cancelSellerOrder: (id: string, reason?: string) => unwrap<unknown>(api.post(`/admin/seller-orders/${id}/cancel`, { reason })),
   returns: (q: { page?: number; status?: string }) => getPaged<ReturnRequest>('/admin/returns', { ...q, limit: 15 }),
-  resolveReturn: (id: string, b: { status: 'approved' | 'rejected' | 'refunded'; adminNotes?: string }) => unwrap<ReturnRequest>(api.patch(`/admin/returns/${id}`, b)),
+  resolveReturn: (id: string, b: { status: 'approved' | 'rejected' | 'refunded'; adminNotes?: string }) =>
+    unwrap<ReturnRequest>(api.patch(`/admin/returns/${id}`, b)),
   reviews: (q: { page?: number; status?: string }) => getPaged<Review>('/admin/reviews', { ...q, limit: 15 }),
   moderateReview: (id: string, status: 'published' | 'hidden') => unwrap<Review>(api.patch(`/reviews/${id}`, { status })),
   auditLogs: () => get<unknown[]>('/admin/audit-logs'),

@@ -5,7 +5,10 @@ test('E: a seller processes, ships (with tracking) and delivers an order; the bu
   await login(page, 'sam.seller@example.com');
   await page.goto('/seller/orders?status=pending');
   await page.goto('/seller/orders');
-  const row = page.getByTestId('seller-order-row').filter({ hasText: /pending/i }).first();
+  const row = page
+    .getByTestId('seller-order-row')
+    .filter({ hasText: /pending/i })
+    .first();
   await expect(row).toBeVisible();
   await row.getByRole('link').first().click();
 

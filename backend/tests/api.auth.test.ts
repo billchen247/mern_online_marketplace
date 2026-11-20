@@ -11,7 +11,10 @@ describe('auth API', () => {
   });
 
   it('registers with only the user role, hashes password, sets refresh cookie', async () => {
-    const res = await api().post('/api/v1/auth/register').send({ ...reg, roles: ['admin', 'seller'] }).expect(201);
+    const res = await api()
+      .post('/api/v1/auth/register')
+      .send({ ...reg, roles: ['admin', 'seller'] })
+      .expect(201);
     expect(res.body.data.user.roles).toEqual(['user']);
     expect(res.body.data.accessToken).toBeTruthy();
     expect(res.headers['set-cookie']?.[0]).toMatch(/refresh_token=.*HttpOnly/i);
@@ -94,9 +97,21 @@ describe('auth API', () => {
   it('updates profile and password', async () => {
     const b = await makeBuyer('Pat');
     await api().patch('/api/v1/users/me').set('Authorization', b.auth).send({ name: 'Patricia' }).expect(200);
-    await api().patch('/api/v1/users/me').set('Authorization', b.auth).send({ newPassword: 'Newpass123', currentPassword: 'nope' }).expect(400);
-    await api().patch('/api/v1/users/me').set('Authorization', b.auth).send({ newPassword: 'Newpass123', currentPassword: 'Password123' }).expect(200);
-    await api().patch('/api/v1/users/me').set('Authorization', b.auth).send({ roles: ['admin'] }).expect(400);
+    await api()
+      .patch('/api/v1/users/me')
+      .set('Authorization', b.auth)
+      .send({ newPassword: 'Newpass123', currentPassword: 'nope' })
+      .expect(400);
+    await api()
+      .patch('/api/v1/users/me')
+      .set('Authorization', b.auth)
+      .send({ newPassword: 'Newpass123', currentPassword: 'Password123' })
+      .expect(200);
+    await api()
+      .patch('/api/v1/users/me')
+      .set('Authorization', b.auth)
+      .send({ roles: ['admin'] })
+      .expect(400);
     const me = await api().get('/api/v1/users/me').set('Authorization', b.auth).expect(200);
     expect(me.body.data.name).toBe('Patricia');
   });
@@ -106,7 +121,11 @@ describe('auth API', () => {
     const body = { recipientName: 'Ann Buyer', phone: '5551112222', addressLine1: '1 Road', city: 'T', state: 'ON', postalCode: 'A1A1A1' };
     const a1 = await api().post('/api/v1/users/me/addresses').set('Authorization', b.auth).send(body).expect(201);
     expect(a1.body.data.isDefault).toBe(true);
-    const a2 = await api().post('/api/v1/users/me/addresses').set('Authorization', b.auth).send({ ...body, isDefault: true }).expect(201);
+    const a2 = await api()
+      .post('/api/v1/users/me/addresses')
+      .set('Authorization', b.auth)
+      .send({ ...body, isDefault: true })
+      .expect(201);
     let list = await api().get('/api/v1/users/me/addresses').set('Authorization', b.auth).expect(200);
     expect(list.body.data.filter((a: any) => a.isDefault)).toHaveLength(1);
     await api().patch(`/api/v1/users/me/addresses/${a2.body.data._id}`).set('Authorization', b.auth).send({ city: 'Ottawa' }).expect(200);
@@ -128,6 +147,9 @@ describe('auth API', () => {
 
   it('strips NoSQL operators from input', async () => {
     await api().post('/api/v1/auth/register').send(reg).expect(201);
-    await api().post('/api/v1/auth/login').send({ email: { $ne: '' }, password: { $ne: '' } }).expect(400);
+    await api()
+      .post('/api/v1/auth/login')
+      .send({ email: { $ne: '' }, password: { $ne: '' } })
+      .expect(400);
   });
 });

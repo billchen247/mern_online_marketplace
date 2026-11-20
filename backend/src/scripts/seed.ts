@@ -33,13 +33,16 @@ export async function seedDatabase(opts: { reset?: boolean; log?: (m: string) =>
   const users: Record<string, any> = {};
   for (const u of USERS) {
     users[u.key] =
-      (await User.findOne({ email: u.email })) ?? (await User.create({ name: u.name, email: u.email, passwordHash, roles: [...u.roles] as any }));
+      (await User.findOne({ email: u.email })) ??
+      (await User.create({ name: u.name, email: u.email, passwordHash, roles: [...u.roles] as any }));
   }
   log(`Users: ${USERS.length}`);
 
   const cats: Record<string, any> = {};
   for (const c of CATEGORIES) {
-    cats[c.name] = (await Category.findOne({ name: c.name })) ?? (await Category.create({ ...c, slug: slugify(c.name), image: imageFor(slugify(c.name), 9) }));
+    cats[c.name] =
+      (await Category.findOne({ name: c.name })) ??
+      (await Category.create({ ...c, slug: slugify(c.name), image: imageFor(slugify(c.name), 9) }));
   }
 
   const shops: Record<string, any> = {};
@@ -127,11 +130,53 @@ export async function seedDatabase(opts: { reset?: boolean; log?: (m: string) =>
 
   // Sample orders placed through the real checkout service (idempotent via idempotency keys).
   const plan: { key: string; buyer: string; items: [string, number][]; deliver: 'all' | 'some' | 'none'; coupon?: string }[] = [
-    { key: 'seed-order-1', buyer: 'alice', items: [['GG-HP-001', 1], ['UT-JK-001', 1]], deliver: 'all' },
-    { key: 'seed-order-2', buyer: 'bob', items: [['TP-TN-001', 1], ['HH-BL-001', 1], ['AP-CH-001', 2]], deliver: 'some' },
-    { key: 'seed-order-3', buyer: 'carol', items: [['SL-LP-001', 1], ['GG-SP-004', 1]], deliver: 'none', coupon: 'WELCOME10' },
-    { key: 'seed-order-4', buyer: 'dave', items: [['GG-SP-004', 1], ['SL-TB-002', 2]], deliver: 'all' },
-    { key: 'seed-order-5', buyer: 'alice', items: [['HH-DO-002', 1], ['TP-YM-002', 1]], deliver: 'all' },
+    {
+      key: 'seed-order-1',
+      buyer: 'alice',
+      items: [
+        ['GG-HP-001', 1],
+        ['UT-JK-001', 1],
+      ],
+      deliver: 'all',
+    },
+    {
+      key: 'seed-order-2',
+      buyer: 'bob',
+      items: [
+        ['TP-TN-001', 1],
+        ['HH-BL-001', 1],
+        ['AP-CH-001', 2],
+      ],
+      deliver: 'some',
+    },
+    {
+      key: 'seed-order-3',
+      buyer: 'carol',
+      items: [
+        ['SL-LP-001', 1],
+        ['GG-SP-004', 1],
+      ],
+      deliver: 'none',
+      coupon: 'WELCOME10',
+    },
+    {
+      key: 'seed-order-4',
+      buyer: 'dave',
+      items: [
+        ['GG-SP-004', 1],
+        ['SL-TB-002', 2],
+      ],
+      deliver: 'all',
+    },
+    {
+      key: 'seed-order-5',
+      buyer: 'alice',
+      items: [
+        ['HH-DO-002', 1],
+        ['TP-YM-002', 1],
+      ],
+      deliver: 'all',
+    },
   ];
   for (const o of plan) {
     const buyer = users[o.buyer];
@@ -150,10 +195,15 @@ export async function seedDatabase(opts: { reset?: boolean; log?: (m: string) =>
       const seller = String(so.seller?._id ?? so.seller);
       const id = String(so._id);
       await sellerOrders.updateStatus(seller, id, { status: 'processing' });
-      await sellerOrders.updateStatus(seller, id, { status: 'shipped', carrier: 'DemoExpress', trackingNumber: `DX${id.slice(-8).toUpperCase()}` });
+      await sellerOrders.updateStatus(seller, id, {
+        status: 'shipped',
+        carrier: 'DemoExpress',
+        trackingNumber: `DX${id.slice(-8).toUpperCase()}`,
+      });
       await sellerOrders.updateStatus(seller, id, { status: 'delivered' });
     }
-    if (o.deliver === 'some' && sos[1]) await sellerOrders.updateStatus(String(sos[1].seller?._id ?? sos[1].seller), String(sos[1]._id), { status: 'processing' });
+    if (o.deliver === 'some' && sos[1])
+      await sellerOrders.updateStatus(String(sos[1].seller?._id ?? sos[1].seller), String(sos[1]._id), { status: 'processing' });
   }
 
   // Reviews (eligible via delivered orders)
@@ -181,7 +231,11 @@ export async function seedDatabase(opts: { reset?: boolean; log?: (m: string) =>
     const so = detail.sellerOrders.find((s: any) => s.items.some((i: any) => i.sku === 'SL-TB-002'));
     if (so && so.fulfillmentStatus === 'delivered') {
       const item = so.items.find((i: any) => i.sku === 'SL-TB-002');
-      await returns.create(String(users.dave._id), String(daveOrder._id), { sellerOrderId: String(so._id), items: [{ itemId: String(item._id), quantity: 1 }], reason: 'One tote arrived with a torn seam.' });
+      await returns.create(String(users.dave._id), String(daveOrder._id), {
+        sellerOrderId: String(so._id),
+        items: [{ itemId: String(item._id), quantity: 1 }],
+        reason: 'One tote arrived with a torn seam.',
+      });
     }
   }
 
@@ -198,7 +252,8 @@ export async function seedDatabase(opts: { reset?: boolean; log?: (m: string) =>
     ['admin', 'system', 'Pending applications', 'There is a seller application awaiting review.'],
   ];
   for (const [k, type, title, message] of notes) {
-    if (!(await Notification.exists({ user: users[k]._id, title }))) await Notification.create({ user: users[k]._id, type, title, message });
+    if (!(await Notification.exists({ user: users[k]._id, title })))
+      await Notification.create({ user: users[k]._id, type, title, message });
   }
   log('Seed complete');
   return { users: USERS.length, shops: SHOPS.length, products: PRODUCTS.length };

@@ -23,8 +23,5 @@ const schema = new Schema(
   { timestamps: true },
 );
 // Only one open (pending) application per user.
-schema.index(
-  { user: 1 },
-  { unique: true, partialFilterExpression: { applicationStatus: 'pending' }, name: 'one_pending_per_user' },
-);
+schema.index({ user: 1 }, { unique: true, partialFilterExpression: { applicationStatus: 'pending' }, name: 'one_pending_per_user' });
 export const SellerApplication = model('SellerApplication', schema);

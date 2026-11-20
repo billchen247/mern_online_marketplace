@@ -102,7 +102,10 @@ const productFields = {
   stock: z.number().int().min(0).max(1_000_000),
   lowStockThreshold: z.number().int().min(0).max(10000).optional(),
   sku: z.string().trim().min(2).max(60),
-  specifications: z.array(z.object({ key: z.string().trim().min(1).max(60), value: z.string().trim().min(1).max(200) })).max(30).default([]),
+  specifications: z
+    .array(z.object({ key: z.string().trim().min(1).max(60), value: z.string().trim().min(1).max(200) }))
+    .max(30)
+    .default([]),
   status: z.enum(['draft', 'active', 'inactive']).default('active'),
 };
 export const productSchema = z.object(productFields).strict();
@@ -111,7 +114,11 @@ export const productPatchSchema = z
   .partial()
   .strict();
 export const stockSchema = z
-  .object({ adjustment: z.number().int().min(-100000).max(100000).optional(), set: z.number().int().min(0).max(1_000_000).optional(), note: z.string().max(200).optional() })
+  .object({
+    adjustment: z.number().int().min(-100000).max(100000).optional(),
+    set: z.number().int().min(0).max(1_000_000).optional(),
+    note: z.string().max(200).optional(),
+  })
   .refine((v) => (v.adjustment === undefined) !== (v.set === undefined), 'Provide exactly one of adjustment or set')
   .refine((v) => v.adjustment !== 0, 'Adjustment cannot be zero');
 export const sellerProductQuery = z.object({
@@ -143,7 +150,11 @@ export const returnSchema = z.object({
   items: z.array(z.object({ itemId: objectId, quantity: z.number().int().min(1) })).min(1),
   reason: z.string().trim().min(5).max(1000),
 });
-export const orderListQuery = z.object({ ...paginationQuery, status: z.string().max(40).optional(), search: z.string().max(60).optional() });
+export const orderListQuery = z.object({
+  ...paginationQuery,
+  status: z.string().max(40).optional(),
+  search: z.string().max(60).optional(),
+});
 
 export const sellerOrderStatusSchema = z.object({
   status: z.enum(['processing', 'shipped', 'delivered', 'cancelled']),
@@ -177,7 +188,10 @@ export const adminUserPatchSchema = z
     removeRoles: z.array(z.enum(['user', 'seller', 'admin'])).optional(),
   })
   .refine((v) => Object.keys(v).length > 0, 'Nothing to update');
-export const returnResolveSchema = z.object({ status: z.enum(['approved', 'rejected', 'refunded']), adminNotes: z.string().max(1000).optional() });
+export const returnResolveSchema = z.object({
+  status: z.enum(['approved', 'rejected', 'refunded']),
+  adminNotes: z.string().max(1000).optional(),
+});
 
 export const settingsSchema = z
   .object({
@@ -191,7 +205,13 @@ export const settingsSchema = z
     coupons: z
       .array(
         z.object({
-          code: z.string().trim().min(3).max(30).regex(/^[A-Za-z0-9_-]+$/).transform((s) => s.toUpperCase()),
+          code: z
+            .string()
+            .trim()
+            .min(3)
+            .max(30)
+            .regex(/^[A-Za-z0-9_-]+$/)
+            .transform((s) => s.toUpperCase()),
           percentOff: z.number().min(1).max(100),
           minSubtotal: z.number().min(0).default(0),
           active: z.boolean().default(true),

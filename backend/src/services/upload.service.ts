@@ -29,7 +29,9 @@ export async function storeImage(file: Express.Multer.File, folder = 'marketplac
   if (env.cloudinary.enabled) {
     const res = await new Promise<{ secure_url: string; public_id: string }>((resolve, reject) => {
       cloudinary.uploader
-        .upload_stream({ folder, resource_type: 'image' }, (err, r) => (err || !r ? reject(err ?? new Error('upload failed')) : resolve(r as any)))
+        .upload_stream({ folder, resource_type: 'image' }, (err, r) =>
+          err || !r ? reject(err ?? new Error('upload failed')) : resolve(r as any),
+        )
         .end(file.buffer);
     });
     return { url: res.secure_url, publicId: res.public_id };

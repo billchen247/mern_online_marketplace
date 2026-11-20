@@ -1,5 +1,15 @@
 import mongoose from 'mongoose';
-import { CommissionRecord, Order, PayoutRecord, Product, ReturnRequest, SellerApplication, SellerOrder, Shop, User } from '../models/index.js';
+import {
+  CommissionRecord,
+  Order,
+  PayoutRecord,
+  Product,
+  ReturnRequest,
+  SellerApplication,
+  SellerOrder,
+  Shop,
+  User,
+} from '../models/index.js';
 import { ApiError } from '../utils/ApiError.js';
 import { round2 } from '../utils/pricing.js';
 import { buildPagination } from '../utils/response.js';
@@ -34,7 +44,9 @@ export async function sellerDashboard(sellerId: string) {
     Product.countDocuments({ seller: sellerId, deletedAt: null }),
     SellerOrder.countDocuments({ seller: sellerId, fulfillmentStatus: { $in: ['pending', 'processing'] } }),
     SellerOrder.countDocuments({ seller: sellerId, fulfillmentStatus: 'delivered' }),
-    Product.find({ seller: sellerId, deletedAt: null, status: { $ne: 'blocked' }, $expr: { $lte: ['$stock', '$lowStockThreshold'] } }).select('name stock lowStockThreshold images').limit(10),
+    Product.find({ seller: sellerId, deletedAt: null, status: { $ne: 'blocked' }, $expr: { $lte: ['$stock', '$lowStockThreshold'] } })
+      .select('name stock lowStockThreshold images')
+      .limit(10),
     SellerOrder.find({ seller: sellerId }).populate('buyer', 'name').sort({ createdAt: -1 }).limit(5),
   ]);
   return {
@@ -56,7 +68,14 @@ export async function sellerAnalytics(sellerId: string, days: number) {
   const topProducts = await SellerOrder.aggregate([
     { $match: { seller, fulfillmentStatus: { $ne: 'cancelled' }, createdAt: { $gte: since } } },
     { $unwind: '$items' },
-    { $group: { _id: '$items.product', name: { $first: '$items.name' }, units: { $sum: '$items.quantity' }, revenue: { $sum: '$items.lineTotal' } } },
+    {
+      $group: {
+        _id: '$items.product',
+        name: { $first: '$items.name' },
+        units: { $sum: '$items.quantity' },
+        revenue: { $sum: '$items.lineTotal' },
+      },
+    },
     { $sort: { revenue: -1 } },
     { $limit: 5 },
   ]);
@@ -66,7 +85,12 @@ export async function sellerAnalytics(sellerId: string, days: number) {
     { $group: { _id: '$items.shop', shopName: { $first: '$items.shopName' }, revenue: { $sum: '$items.lineTotal' } } },
     { $sort: { revenue: -1 } },
   ]);
-  return { days, salesTrend: await trend(SellerOrder, { seller, fulfillmentStatus: { $ne: 'cancelled' } }, 'subtotal', days), topProducts, revenueByShop: byShop };
+  return {
+    days,
+    salesTrend: await trend(SellerOrder, { seller, fulfillmentStatus: { $ne: 'cancelled' } }, 'subtotal', days),
+    topProducts,
+    revenueByShop: byShop,
+  };
 }
 
 export async function sellerEarnings(sellerId: string, q: { page: number; limit: number }) {
@@ -78,10 +102,17 @@ export async function sellerEarnings(sellerId: string, q: { page: number; limit:
   const get = (s: string, f: string) => rows.find((r) => r._id === s)?.[f] ?? 0;
   const live = ['pending', 'completed'];
   const sum = (f: string) => live.reduce((a, s) => a + get(s, f), 0);
-  const payouts = await PayoutRecord.aggregate([{ $match: { seller, status: { $in: ['pending', 'paid'] } } }, { $group: { _id: null, total: { $sum: '$amount' } } }]);
+  const payouts = await PayoutRecord.aggregate([
+    { $match: { seller, status: { $in: ['pending', 'paid'] } } },
+    { $group: { _id: null, total: { $sum: '$amount' } } },
+  ]);
   const paidOut = payouts[0]?.total ?? 0;
   const [history, total] = await Promise.all([
-    CommissionRecord.find({ seller }).populate('sellerOrder', 'orderNumber').sort({ createdAt: -1 }).skip((q.page - 1) * q.limit).limit(q.limit),
+    CommissionRecord.find({ seller })
+      .populate('sellerOrder', 'orderNumber')
+      .sort({ createdAt: -1 })
+      .skip((q.page - 1) * q.limit)
+      .limit(q.limit),
     CommissionRecord.countDocuments({ seller }),
   ]);
   return {
@@ -99,7 +130,10 @@ export async function sellerEarnings(sellerId: string, q: { page: number; limit:
 
 export async function sellerPayouts(sellerId: string, q: { page: number; limit: number }) {
   const [data, total] = await Promise.all([
-    PayoutRecord.find({ seller: sellerId }).sort({ createdAt: -1 }).skip((q.page - 1) * q.limit).limit(q.limit),
+    PayoutRecord.find({ seller: sellerId })
+      .sort({ createdAt: -1 })
+      .skip((q.page - 1) * q.limit)
+      .limit(q.limit),
     PayoutRecord.countDocuments({ seller: sellerId }),
   ]);
   return { simulated: true, data, pagination: buildPagination(q.page, q.limit, total) };
@@ -128,8 +162,14 @@ export async function adminDashboard() {
     ReturnRequest.countDocuments({ status: 'requested' }),
     Order.find().populate('buyer', 'name').sort({ createdAt: -1 }).limit(5),
   ]);
-  const [gross] = await Order.aggregate([{ $match: { orderStatus: { $ne: 'cancelled' } } }, { $group: { _id: null, total: { $sum: '$total' } } }]);
-  const [comm] = await CommissionRecord.aggregate([{ $match: { status: { $in: ['pending', 'completed'] } } }, { $group: { _id: null, total: { $sum: '$commissionAmount' } } }]);
+  const [gross] = await Order.aggregate([
+    { $match: { orderStatus: { $ne: 'cancelled' } } },
+    { $group: { _id: null, total: { $sum: '$total' } } },
+  ]);
+  const [comm] = await CommissionRecord.aggregate([
+    { $match: { status: { $in: ['pending', 'completed'] } } },
+    { $group: { _id: null, total: { $sum: '$commissionAmount' } } },
+  ]);
   return {
     totalUsers: users,
     totalSellers: sellers,

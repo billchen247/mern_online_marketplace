@@ -2,9 +2,16 @@
   "name": "mern-online-marketplace",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "description": "Multi-vendor online marketplace (MERN, TypeScript)",
-  "workspaces": ["backend", "frontend", "e2e"],
-  "engines": { "node": ">=20" },
+  "workspaces": [
+    "backend",
+    "frontend",
+    "e2e"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "dev": "concurrently -n backend,frontend -c blue,green \"npm run dev -w backend\" \"npm run dev -w frontend\"",
     "build": "npm run build -w backend && npm run build -w frontend",

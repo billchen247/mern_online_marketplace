@@ -19,29 +19,56 @@ export function ShopListPage() {
   return (
     <Container sx={{ py: 3 }}>
       <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ justifyContent: 'space-between', mb: 3 }}>
-        <Typography variant="h4" component="h1" sx={{ fontWeight: 700 }}>{seller ? 'Seller’s shops' : 'Shops'}</Typography>
-        <TextField size="small" label="Search shops" value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} />
+        <Typography variant="h4" component="h1" sx={{ fontWeight: 700 }}>
+          {seller ? 'Seller’s shops' : 'Shops'}
+        </Typography>
+        <TextField
+          size="small"
+          label="Search shops"
+          value={search}
+          onChange={(e) => {
+            setSearch(e.target.value);
+            setPage(1);
+          }}
+        />
       </Stack>
       <AsyncView state={state}>
-        {(r) => r.data.length === 0 ? <EmptyState title="No shops found" /> : (
-          <>
-            <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' } }}>
-              {r.data.map((s) => (
-                <Card key={s._id} variant="outlined">
-                  <CardActionArea component={RouterLink} to={`/shops/${s._id}`}>
-                    <CardContent>
-                      <Stack direction="row" spacing={2} sx={{ alignItems: 'center' }}>
-                        <Avatar src={s.logo ? imageUrl(s.logo.url) : undefined} sx={{ width: 56, height: 56 }}>{s.name[0]}</Avatar>
-                        <Box sx={{ minWidth: 0 }}><Typography noWrap sx={{ fontWeight: 700 }}>{s.name}</Typography><Typography variant="body2" color="text.secondary" sx={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{s.description}</Typography></Box>
-                      </Stack>
-                    </CardContent>
-                  </CardActionArea>
-                </Card>
-              ))}
-            </Box>
-            <Pager pagination={r.pagination} onChange={setPage} />
-          </>
-        )}
+        {(r) =>
+          r.data.length === 0 ? (
+            <EmptyState title="No shops found" />
+          ) : (
+            <>
+              <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: '1fr', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' } }}>
+                {r.data.map((s) => (
+                  <Card key={s._id} variant="outlined">
+                    <CardActionArea component={RouterLink} to={`/shops/${s._id}`}>
+                      <CardContent>
+                        <Stack direction="row" spacing={2} sx={{ alignItems: 'center' }}>
+                          <Avatar src={s.logo ? imageUrl(s.logo.url) : undefined} sx={{ width: 56, height: 56 }}>
+                            {s.name[0]}
+                          </Avatar>
+                          <Box sx={{ minWidth: 0 }}>
+                            <Typography noWrap sx={{ fontWeight: 700 }}>
+                              {s.name}
+                            </Typography>
+                            <Typography
+                              variant="body2"
+                              color="text.secondary"
+                              sx={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
+                            >
+                              {s.description}
+                            </Typography>
+                          </Box>
+                        </Stack>
+                      </CardContent>
+                    </CardActionArea>
+                  </Card>
+                ))}
+              </Box>
+              <Pager pagination={r.pagination} onChange={setPage} />
+            </>
+          )
+        }
       </AsyncView>
     </Container>
   );
@@ -57,24 +84,63 @@ export function ShopDetailPage() {
       <AsyncView state={shop}>
         {(s) => (
           <>
-            <Box sx={{ height: { xs: 140, md: 220 }, bgcolor: 'primary.main', backgroundImage: s.banner ? `url(${imageUrl(s.banner.url)})` : undefined, backgroundSize: 'cover', backgroundPosition: 'center' }} role="img" aria-label={`${s.name} banner`} />
+            <Box
+              sx={{
+                height: { xs: 140, md: 220 },
+                bgcolor: 'primary.main',
+                backgroundImage: s.banner ? `url(${imageUrl(s.banner.url)})` : undefined,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+              }}
+              role="img"
+              aria-label={`${s.name} banner`}
+            />
             <Container sx={{ mt: -4 }}>
               <Stack direction="row" spacing={2} sx={{ alignItems: 'flex-end', mb: 3 }}>
-                <Avatar src={s.logo ? imageUrl(s.logo.url) : undefined} sx={{ width: 88, height: 88, border: 4, borderColor: 'background.paper' }}>{s.name[0]}</Avatar>
-                <Box><Typography variant="h4" component="h1" sx={{ fontWeight: 700, bgcolor: 'background.paper', px: 1, borderRadius: 1 }}>{s.name}</Typography></Box>
+                <Avatar
+                  src={s.logo ? imageUrl(s.logo.url) : undefined}
+                  sx={{ width: 88, height: 88, border: 4, borderColor: 'background.paper' }}
+                >
+                  {s.name[0]}
+                </Avatar>
+                <Box>
+                  <Typography variant="h4" component="h1" sx={{ fontWeight: 700, bgcolor: 'background.paper', px: 1, borderRadius: 1 }}>
+                    {s.name}
+                  </Typography>
+                </Box>
               </Stack>
-              <Typography color="text.secondary" sx={{ mb: 1 }}>{s.description}</Typography>
-              {s.contact?.email && <Typography variant="body2">Contact: {s.contact.email}{s.contact.phone ? ` · ${s.contact.phone}` : ''}</Typography>}
+              <Typography color="text.secondary" sx={{ mb: 1 }}>
+                {s.description}
+              </Typography>
+              {s.contact?.email && (
+                <Typography variant="body2">
+                  Contact: {s.contact.email}
+                  {s.contact.phone ? ` · ${s.contact.phone}` : ''}
+                </Typography>
+              )}
             </Container>
           </>
         )}
       </AsyncView>
       <Container sx={{ py: 3 }}>
-        <Typography variant="h5" component="h2" sx={{ fontWeight: 700, mb: 2 }}>Products</Typography>
+        <Typography variant="h5" component="h2" sx={{ fontWeight: 700, mb: 2 }}>
+          Products
+        </Typography>
         <AsyncView state={products}>
-          {(r) => r.data.length === 0 ? <EmptyState title="No products yet" /> : (
-            <><Box sx={productGridSx}>{r.data.map((p) => <ProductCard key={p._id} product={p} />)}</Box><Pager pagination={r.pagination} onChange={setPage} /></>
-          )}
+          {(r) =>
+            r.data.length === 0 ? (
+              <EmptyState title="No products yet" />
+            ) : (
+              <>
+                <Box sx={productGridSx}>
+                  {r.data.map((p) => (
+                    <ProductCard key={p._id} product={p} />
+                  ))}
+                </Box>
+                <Pager pagination={r.pagination} onChange={setPage} />
+              </>
+            )
+          }
         </AsyncView>
       </Container>
     </Box>

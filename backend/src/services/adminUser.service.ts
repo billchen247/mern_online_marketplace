@@ -14,7 +14,10 @@ export async function list(q: { search?: string; role?: string; status?: string;
     filter.$or = [{ name: re }, { email: re }];
   }
   const [data, total] = await Promise.all([
-    User.find(filter).sort({ createdAt: -1 }).skip((q.page - 1) * q.limit).limit(q.limit),
+    User.find(filter)
+      .sort({ createdAt: -1 })
+      .skip((q.page - 1) * q.limit)
+      .limit(q.limit),
     User.countDocuments(filter),
   ]);
   return { data, pagination: buildPagination(q.page, q.limit, total) };
@@ -34,7 +37,11 @@ export async function get(id: string) {
     { $match: { seller: user._id, fulfillmentStatus: { $ne: 'cancelled' } } },
     { $group: { _id: null, total: { $sum: '$subtotal' }, count: { $sum: 1 } } },
   ]);
-  return { user, stats: { orders, shops, products, addresses, sellerSales: sales?.total ?? 0, sellerOrders: sales?.count ?? 0 }, application };
+  return {
+    user,
+    stats: { orders, shops, products, addresses, sellerSales: sales?.total ?? 0, sellerOrders: sales?.count ?? 0 },
+    application,
+  };
 }
 
 export async function update(

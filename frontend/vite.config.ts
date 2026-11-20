@@ -7,7 +7,7 @@ export default defineConfig({
   server: {
     port: 5173,
     // Dev convenience: forward local uploads from the API server.
-    proxy: { '/uploads': process.env.VITE_API_PROXY_TARGET ?? 'http://localhost:5000' },
+    proxy: { '/uploads': process.env.VITE_API_PROXY_TARGET ?? 'http://localhost:3000' },
   },
   build: {
     rollupOptions: {
@@ -23,8 +23,11 @@ export default defineConfig({
   },
   test: {
     environment: 'jsdom',
+    // same origin as the mocked API so jsdom XHR does not trigger CORS
+    environmentOptions: { jsdom: { url: 'http://localhost:5000/' } },
     globals: true,
     setupFiles: ['tests/setup.ts'],
+    testTimeout: 30000,
     include: ['tests/**/*.test.{ts,tsx}'],
     css: false,
     coverage: {

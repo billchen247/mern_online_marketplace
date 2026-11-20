@@ -1,4 +1,3 @@
-import path from 'node:path';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import express from 'express';
@@ -22,7 +21,13 @@ export function createApp() {
 
   app.get('/health', (_req, res) => {
     const dbUp = mongoose.connection.readyState === 1;
-    res.status(dbUp ? 200 : 503).json({ success: dbUp, status: dbUp ? 'ok' : 'degraded', db: dbUp ? 'connected' : 'disconnected', uptime: process.uptime(), env: env.nodeEnv });
+    res.status(dbUp ? 200 : 503).json({
+      success: dbUp,
+      status: dbUp ? 'ok' : 'degraded',
+      db: dbUp ? 'connected' : 'disconnected',
+      uptime: process.uptime(),
+      env: env.nodeEnv,
+    });
   });
   app.use('/uploads', express.static(UPLOAD_DIR, { maxAge: '7d', index: false }));
   app.use('/api/v1', globalLimiter, routes);

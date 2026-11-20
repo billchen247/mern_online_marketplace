@@ -74,7 +74,8 @@ export async function addItem(userId: string, productId: string, quantity: numbe
   const cart = await getOrCreate(userId);
   const existing = cart.items.find((i) => String(i.product) === String(p._id));
   const newQty = (existing?.quantity ?? 0) + quantity;
-  if (newQty > p.stock) throw ApiError.conflict(p.stock === 0 ? 'Product is out of stock' : `Only ${p.stock} available in stock`, 'INSUFFICIENT_STOCK');
+  if (newQty > p.stock)
+    throw ApiError.conflict(p.stock === 0 ? 'Product is out of stock' : `Only ${p.stock} available in stock`, 'INSUFFICIENT_STOCK');
   if (newQty > 99) throw ApiError.badRequest('Maximum quantity per item is 99');
   if (existing) existing.quantity = newQty;
   else cart.items.push({ product: p._id, shop: p.shop, seller: p.seller, quantity } as any);

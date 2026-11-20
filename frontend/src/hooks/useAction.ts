@@ -7,7 +7,7 @@ export function useAction() {
   const { success, error } = useNotify();
   const [busy, setBusy] = useState(false);
   const run = useCallback(
-    async <T,>(fn: () => Promise<T>, successMessage?: string): Promise<T | undefined> => {
+    async <T>(fn: () => Promise<T>, successMessage?: string): Promise<T | undefined> => {
       setBusy(true);
       try {
         const r = await fn();

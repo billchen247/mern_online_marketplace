@@ -3,7 +3,12 @@ import { allocate, calcCommission, calcCouponDiscount, calcShipping, calcTax, ef
 import { allowedTransitions, canTransition, deriveOrderStatus } from '../src/utils/orderStatus.js';
 import { priceLines } from '../src/services/pricing.service.js';
 
-const settings = { shipping: { flatRate: 5, freeShippingThreshold: 100 }, tax: { rate: 10 }, commissionRate: 10, coupons: [{ code: 'SAVE10', percentOff: 10, minSubtotal: 20, active: true }] };
+const settings = {
+  shipping: { flatRate: 5, freeShippingThreshold: 100 },
+  tax: { rate: 10 },
+  commissionRate: 10,
+  coupons: [{ code: 'SAVE10', percentOff: 10, minSubtotal: 20, active: true }],
+};
 
 describe('pricing utils', () => {
   it('applies percentage discounts and rounds to cents', () => {

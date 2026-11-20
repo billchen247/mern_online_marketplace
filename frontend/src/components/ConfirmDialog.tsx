@@ -10,7 +10,16 @@ export interface ConfirmDialogProps {
   onConfirm: () => void;
   onClose: () => void;
 }
-export function ConfirmDialog({ open, title, message, confirmLabel = 'Confirm', destructive, busy, onConfirm, onClose }: ConfirmDialogProps) {
+export function ConfirmDialog({
+  open,
+  title,
+  message,
+  confirmLabel = 'Confirm',
+  destructive,
+  busy,
+  onConfirm,
+  onClose,
+}: ConfirmDialogProps) {
   return (
     <Dialog open={open} onClose={onClose} aria-labelledby="confirm-title">
       <DialogTitle id="confirm-title">{title}</DialogTitle>
@@ -18,7 +27,9 @@ export function ConfirmDialog({ open, title, message, confirmLabel = 'Confirm', 
         <DialogContentText>{message}</DialogContentText>
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose} disabled={busy}>Cancel</Button>
+        <Button onClick={onClose} disabled={busy}>
+          Cancel
+        </Button>
         <Button onClick={onConfirm} color={destructive ? 'error' : 'primary'} variant="contained" disabled={busy}>
           {confirmLabel}
         </Button>

@@ -81,7 +81,13 @@ export async function getPublic(idOrSlug: string) {
     { path: 'seller', select: 'name' },
   ]);
   if ((p.shop as any)?.status !== 'active') throw ApiError.notFound('Product not found');
-  const related = await Product.find({ category: (p.category as any)._id, _id: { $ne: p._id }, status: 'active', deletedAt: null, shop: { $nin: await inactiveShopIds() } })
+  const related = await Product.find({
+    category: (p.category as any)._id,
+    _id: { $ne: p._id },
+    status: 'active',
+    deletedAt: null,
+    shop: { $nin: await inactiveShopIds() },
+  })
     .populate('shop', 'name slug')
     .sort({ ratingAverage: -1, salesCount: -1 })
     .limit(8);
@@ -131,7 +137,14 @@ export async function createForSeller(sellerId: string, input: Record<string, an
   const status = input.status === 'active' && settings.moderation!.requireProductApproval ? 'pending' : (input.status ?? 'active');
   try {
     const product = await Product.create({ ...input, seller: sellerId, shop: shop._id, slug, status });
-    await InventoryLog.create({ product: product._id, seller: sellerId, change: product.stock, resultingStock: product.stock, reason: 'initial', actor: sellerId });
+    await InventoryLog.create({
+      product: product._id,
+      seller: sellerId,
+      change: product.stock,
+      resultingStock: product.stock,
+      reason: 'initial',
+      actor: sellerId,
+    });
     return product;
   } catch (e: any) {
     if (e.code === 11000) throw ApiError.conflict('SKU already exists in this shop');
@@ -158,7 +171,14 @@ export async function updateForSeller(sellerId: string, id: string, input: Recor
     throw e;
   }
   if (input.stock !== undefined && input.stock !== before) {
-    await InventoryLog.create({ product: p._id, seller: sellerId, change: p.stock - before, resultingStock: p.stock, reason: 'adjustment', actor: sellerId });
+    await InventoryLog.create({
+      product: p._id,
+      seller: sellerId,
+      change: p.stock - before,
+      resultingStock: p.stock,
+      reason: 'adjustment',
+      actor: sellerId,
+    });
   }
   if (input.images) {
     const kept = new Set((input.images as any[]).map((i) => i.publicId));
@@ -207,14 +227,22 @@ export async function removeForSeller(sellerId: string, id: string) {
   await p.save();
 }
 
-export async function listForSeller(sellerId: string, q: { search?: string; shop?: string; status?: string; lowStock?: boolean; page: number; limit: number }) {
+export async function listForSeller(
+  sellerId: string,
+  q: { search?: string; shop?: string; status?: string; lowStock?: boolean; page: number; limit: number },
+) {
   const filter: Record<string, any> = { seller: sellerId, deletedAt: null };
   if (q.shop) filter.shop = q.shop;
   if (q.status) filter.status = q.status;
   if (q.search) filter.name = new RegExp(escapeRegex(q.search), 'i');
   if (q.lowStock) filter.$expr = { $lte: ['$stock', '$lowStockThreshold'] };
   const [data, total] = await Promise.all([
-    Product.find(filter).populate('shop', 'name').populate('category', 'name').sort({ createdAt: -1 }).skip((q.page - 1) * q.limit).limit(q.limit),
+    Product.find(filter)
+      .populate('shop', 'name')
+      .populate('category', 'name')
+      .sort({ createdAt: -1 })
+      .skip((q.page - 1) * q.limit)
+      .limit(q.limit),
     Product.countDocuments(filter),
   ]);
   return { data: data.map(decorate), pagination: buildPagination(q.page, q.limit, total) };
@@ -227,12 +255,26 @@ export async function getForSeller(sellerId: string, id: string) {
 
 // ---------- Admin ----------
 
-export async function adminList(q: { search?: string; status?: string; shop?: string; seller?: string; category?: string; page: number; limit: number }) {
+export async function adminList(q: {
+  search?: string;
+  status?: string;
+  shop?: string;
+  seller?: string;
+  category?: string;
+  page: number;
+  limit: number;
+}) {
   const filter: Record<string, any> = { deletedAt: null };
   for (const k of ['status', 'shop', 'seller', 'category'] as const) if (q[k]) filter[k] = q[k];
   if (q.search) filter.name = new RegExp(escapeRegex(q.search), 'i');
   const [data, total] = await Promise.all([
-    Product.find(filter).populate('shop', 'name').populate('seller', 'name').populate('category', 'name').sort({ createdAt: -1 }).skip((q.page - 1) * q.limit).limit(q.limit),
+    Product.find(filter)
+      .populate('shop', 'name')
+      .populate('seller', 'name')
+      .populate('category', 'name')
+      .sort({ createdAt: -1 })
+      .skip((q.page - 1) * q.limit)
+      .limit(q.limit),
     Product.countDocuments(filter),
   ]);
   return { data: data.map(decorate), pagination: buildPagination(q.page, q.limit, total) };

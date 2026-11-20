@@ -35,17 +35,7 @@ const schema = new Schema(
     },
     orderStatus: {
       type: String,
-      enum: [
-        'pending',
-        'paid',
-        'processing',
-        'shipped',
-        'delivered',
-        'cancelled',
-        'partially_fulfilled',
-        'partially_refunded',
-        'refunded',
-      ],
+      enum: ['pending', 'paid', 'processing', 'shipped', 'delivered', 'cancelled', 'partially_fulfilled', 'partially_refunded', 'refunded'],
       default: 'pending',
       index: true,
     },

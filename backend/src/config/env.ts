@@ -62,9 +62,7 @@ export const env = {
     cloudName: parsed.CLOUDINARY_CLOUD_NAME,
     apiKey: parsed.CLOUDINARY_API_KEY,
     apiSecret: parsed.CLOUDINARY_API_SECRET,
-    enabled: Boolean(
-      parsed.CLOUDINARY_CLOUD_NAME && parsed.CLOUDINARY_API_KEY && parsed.CLOUDINARY_API_SECRET,
-    ),
+    enabled: Boolean(parsed.CLOUDINARY_CLOUD_NAME && parsed.CLOUDINARY_API_KEY && parsed.CLOUDINARY_API_SECRET),
   },
   rateLimit: {
     enabled: parsed.RATE_LIMIT_ENABLED && !isTest,

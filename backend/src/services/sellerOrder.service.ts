@@ -18,7 +18,11 @@ export async function list(sellerId: string, q: { status?: string; search?: stri
   if (q.status) filter.fulfillmentStatus = q.status;
   if (q.search) filter.orderNumber = new RegExp(q.search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
   const [data, total] = await Promise.all([
-    SellerOrder.find(filter).populate('buyer', 'name').sort({ createdAt: -1 }).skip((q.page - 1) * q.limit).limit(q.limit),
+    SellerOrder.find(filter)
+      .populate('buyer', 'name')
+      .sort({ createdAt: -1 })
+      .skip((q.page - 1) * q.limit)
+      .limit(q.limit),
     SellerOrder.countDocuments(filter),
   ]);
   return { data, pagination: buildPagination(q.page, q.limit, total) };
@@ -55,7 +59,12 @@ export async function updateStatus(
     const carrier = input.carrier ?? so.trackingInformation?.carrier;
     const trackingNumber = input.trackingNumber ?? so.trackingInformation?.trackingNumber;
     if (!carrier || !trackingNumber) throw ApiError.badRequest('Carrier and tracking number are required to mark an order as shipped');
-    set['trackingInformation'] = { carrier, trackingNumber, trackingUrl: input.trackingUrl ?? so.trackingInformation?.trackingUrl, shippedAt: new Date() };
+    set['trackingInformation'] = {
+      carrier,
+      trackingNumber,
+      trackingUrl: input.trackingUrl ?? so.trackingInformation?.trackingUrl,
+      shippedAt: new Date(),
+    };
   }
   if (input.status === 'delivered') set['deliveredAt'] = new Date();
   // Compare-and-set on the previous status guards against concurrent transitions.
@@ -64,13 +73,24 @@ export async function updateStatus(
     { $set: set, $push: { statusHistory: { status: input.status, at: new Date() } } },
   );
   if (res.modifiedCount !== 1) throw ApiError.conflict('Order status changed concurrently, please retry');
-  if (input.status === 'delivered') await CommissionRecord.updateOne({ sellerOrder: so._id, status: 'pending' }, { $set: { status: 'completed' } });
+  if (input.status === 'delivered')
+    await CommissionRecord.updateOne({ sellerOrder: so._id, status: 'pending' }, { $set: { status: 'completed' } });
   await recomputeParent(so.parentOrder);
-  await notify(so.buyer, 'order_update', `Order ${input.status}`, `Seller order ${so.orderNumber} is now ${input.status}.`, `/account/orders/${so.parentOrder}`);
+  await notify(
+    so.buyer,
+    'order_update',
+    `Order ${input.status}`,
+    `Seller order ${so.orderNumber} is now ${input.status}.`,
+    `/account/orders/${so.parentOrder}`,
+  );
   return SellerOrder.findById(id);
 }
 
-export async function updateTracking(sellerId: string, id: string, input: { carrier: string; trackingNumber: string; trackingUrl?: string }) {
+export async function updateTracking(
+  sellerId: string,
+  id: string,
+  input: { carrier: string; trackingNumber: string; trackingUrl?: string },
+) {
   const so = await ownOrder(sellerId, id);
   if (!['processing', 'shipped'].includes(so.fulfillmentStatus)) {
     throw ApiError.conflict('Tracking can only be set while an order is processing or shipped');

@@ -1,4 +1,14 @@
-import { allocate, calcCommission, calcCouponDiscount, calcShipping, calcTax, effectivePrice, fromCents, round2, toCents } from '../utils/pricing.js';
+import {
+  allocate,
+  calcCommission,
+  calcCouponDiscount,
+  calcShipping,
+  calcTax,
+  effectivePrice,
+  fromCents,
+  round2,
+  toCents,
+} from '../utils/pricing.js';
 
 export interface PricedLine {
   product: any;
@@ -10,9 +20,7 @@ export interface PricedLine {
  * Single source of truth used by both cart preview and checkout so totals always reconcile.
  */
 export function priceLines(lines: PricedLine[], settings: any, couponCode?: string | null) {
-  const coupon = couponCode
-    ? (settings.coupons ?? []).find((c: any) => c.code === couponCode.toUpperCase()) ?? null
-    : null;
+  const coupon = couponCode ? ((settings.coupons ?? []).find((c: any) => c.code === couponCode.toUpperCase()) ?? null) : null;
 
   const groups = new Map<string, PricedLine[]>();
   for (const l of lines) {

@@ -4,7 +4,10 @@ import { buildPagination } from '../utils/response.js';
 
 export async function list(userId: string, q: { page: number; limit: number }) {
   const [data, total, unread] = await Promise.all([
-    Notification.find({ user: userId }).sort({ createdAt: -1 }).skip((q.page - 1) * q.limit).limit(q.limit),
+    Notification.find({ user: userId })
+      .sort({ createdAt: -1 })
+      .skip((q.page - 1) * q.limit)
+      .limit(q.limit),
     Notification.countDocuments({ user: userId }),
     Notification.countDocuments({ user: userId, read: false }),
   ]);

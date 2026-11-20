@@ -16,7 +16,9 @@ export class ErrorBoundary extends Component<{ children: ReactNode }, { failed: 
         <Stack spacing={2} role="alert" sx={{ alignItems: 'center', textAlign: 'center' }}>
           <Typography variant="h4">Something went wrong</Typography>
           <Typography color="text.secondary">An unexpected error occurred. Reloading the page usually fixes it.</Typography>
-          <Button variant="contained" onClick={() => window.location.assign('/')}>Back to home</Button>
+          <Button variant="contained" onClick={() => window.location.assign('/')}>
+            Back to home
+          </Button>
         </Stack>
       </Container>
     );

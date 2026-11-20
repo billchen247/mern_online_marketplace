@@ -7,10 +7,7 @@ export const isAdmin = (u?: Pick<User, 'roles'> | null) => hasRole(u, 'admin');
 
 /** Pure route-access decision used by guards (UX only — the API enforces authorization). */
 export type AccessDecision = 'allow' | 'login' | 'forbidden' | 'loading';
-export function decideAccess(
-  state: { loading: boolean; user: Pick<User, 'roles'> | null },
-  required?: Role[],
-): AccessDecision {
+export function decideAccess(state: { loading: boolean; user: Pick<User, 'roles'> | null }, required?: Role[]): AccessDecision {
   if (state.loading) return 'loading';
   if (!state.user) return 'login';
   if (required && required.length > 0 && !hasAnyRole(state.user, required)) return 'forbidden';

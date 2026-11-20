@@ -9,13 +9,20 @@ async function refreshRating(productId: unknown) {
     { $match: { product: new mongoose.Types.ObjectId(String(productId)), status: 'published' } },
     { $group: { _id: '$product', avg: { $avg: '$rating' }, count: { $sum: 1 } } },
   ]);
-  await Product.updateOne({ _id: productId }, { $set: { ratingAverage: agg ? Math.round(agg.avg * 10) / 10 : 0, ratingCount: agg?.count ?? 0 } });
+  await Product.updateOne(
+    { _id: productId },
+    { $set: { ratingAverage: agg ? Math.round(agg.avg * 10) / 10 : 0, ratingCount: agg?.count ?? 0 } },
+  );
 }
 
 export async function list(productId: string, q: { page: number; limit: number }) {
   const filter: Record<string, any> = { product: productId, status: 'published' };
   const [data, total] = await Promise.all([
-    Review.find(filter).populate('buyer', 'name').sort({ createdAt: -1 }).skip((q.page - 1) * q.limit).limit(q.limit),
+    Review.find(filter)
+      .populate('buyer', 'name')
+      .sort({ createdAt: -1 })
+      .skip((q.page - 1) * q.limit)
+      .limit(q.limit),
     Review.countDocuments(filter),
   ]);
   return { data, pagination: buildPagination(q.page, q.limit, total) };
@@ -45,7 +52,11 @@ export async function create(buyerId: string, productId: string, input: { rating
   }
 }
 
-export async function update(user: { id: string; roles: string[] }, id: string, input: { rating?: number; comment?: string; title?: string; status?: 'published' | 'hidden' }) {
+export async function update(
+  user: { id: string; roles: string[] },
+  id: string,
+  input: { rating?: number; comment?: string; title?: string; status?: 'published' | 'hidden' },
+) {
   const review = mongoose.isValidObjectId(id) ? await Review.findById(id) : null;
   if (!review) throw ApiError.notFound('Review not found');
   const isAdmin = user.roles.includes('admin');
@@ -77,7 +88,12 @@ export async function remove(user: { id: string; roles: string[] }, id: string) 
 export async function adminList(q: { status?: string; page: number; limit: number }) {
   const filter: Record<string, any> = q.status ? { status: q.status } : {};
   const [data, total] = await Promise.all([
-    Review.find(filter).populate('buyer', 'name').populate('product', 'name').sort({ createdAt: -1 }).skip((q.page - 1) * q.limit).limit(q.limit),
+    Review.find(filter)
+      .populate('buyer', 'name')
+      .populate('product', 'name')
+      .sort({ createdAt: -1 })
+      .skip((q.page - 1) * q.limit)
+      .limit(q.limit),
     Review.countDocuments(filter),
   ]);
   return { data, pagination: buildPagination(q.page, q.limit, total) };

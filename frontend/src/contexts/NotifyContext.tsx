@@ -16,7 +16,13 @@ export function NotifyProvider({ children }: { children: ReactNode }) {
   return (
     <Ctx.Provider value={api}>
       {children}
-      <Snackbar key={toast?.key} open={Boolean(toast)} autoHideDuration={4500} onClose={() => setToast(null)} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
+      <Snackbar
+        key={toast?.key}
+        open={Boolean(toast)}
+        autoHideDuration={4500}
+        onClose={() => setToast(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
         {toast ? (
           <Alert severity={toast.severity} variant="filled" onClose={() => setToast(null)} role="status" sx={{ width: '100%' }}>
             {toast.message}

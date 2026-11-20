@@ -12,16 +12,38 @@ export function Loading({ label = 'Loading…' }: { label?: string }) {
 }
 export function ErrorState({ message, onRetry }: { message: string; onRetry?: () => void }) {
   return (
-    <Alert severity="error" sx={{ my: 2 }} action={onRetry ? <Button color="inherit" size="small" onClick={onRetry}>Retry</Button> : undefined}>
+    <Alert
+      severity="error"
+      sx={{ my: 2 }}
+      action={
+        onRetry ? (
+          <Button color="inherit" size="small" onClick={onRetry}>
+            Retry
+          </Button>
+        ) : undefined
+      }
+    >
       {message}
     </Alert>
   );
 }
-export function EmptyState({ title, description, action, icon }: { title: string; description?: string; action?: ReactNode; icon?: ReactNode }) {
+export function EmptyState({
+  title,
+  description,
+  action,
+  icon,
+}: {
+  title: string;
+  description?: string;
+  action?: ReactNode;
+  icon?: ReactNode;
+}) {
   return (
     <Stack spacing={1.5} sx={{ alignItems: 'center', textAlign: 'center', py: 8, color: 'text.secondary' }}>
       {icon ?? <InboxOutlined sx={{ fontSize: 56, opacity: 0.5 }} />}
-      <Typography variant="h6" color="text.primary">{title}</Typography>
+      <Typography variant="h6" color="text.primary">
+        {title}
+      </Typography>
       {description && <Typography sx={{ maxWidth: 420 }}>{description}</Typography>}
       {action}
     </Stack>
@@ -29,7 +51,10 @@ export function EmptyState({ title, description, action, icon }: { title: string
 }
 export function ProductGridSkeleton({ count = 8 }: { count?: number }) {
   return (
-    <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: 'repeat(2, 1fr)', sm: 'repeat(3, 1fr)', md: 'repeat(4, 1fr)' } }} aria-busy="true">
+    <Box
+      sx={{ display: 'grid', gap: 2, gridTemplateColumns: { xs: 'repeat(2, 1fr)', sm: 'repeat(3, 1fr)', md: 'repeat(4, 1fr)' } }}
+      aria-busy="true"
+    >
       {Array.from({ length: count }).map((_, i) => (
         <Box key={i}>
           <Skeleton variant="rounded" height={190} />
@@ -41,7 +66,17 @@ export function ProductGridSkeleton({ count = 8 }: { count?: number }) {
   );
 }
 /** Standard wrapper: shows loading / error / content. */
-export function AsyncView<T>({ state, children, loadingLabel, allowNull }: { allowNull?: boolean; state: { data: T | null; loading: boolean; error: string | null; reload: () => void }; children: (d: T) => ReactNode; loadingLabel?: string }) {
+export function AsyncView<T>({
+  state,
+  children,
+  loadingLabel,
+  allowNull,
+}: {
+  allowNull?: boolean;
+  state: { data: T | null; loading: boolean; error: string | null; reload: () => void };
+  children: (d: T) => ReactNode;
+  loadingLabel?: string;
+}) {
   if (state.loading && !state.data) return <Loading label={loadingLabel} />;
   if (state.error && !state.data) return <ErrorState message={state.error} onRetry={state.reload} />;
   if (!state.data) return allowNull && !state.loading ? <>{children(null as T)}</> : null;

@@ -9,7 +9,10 @@ export async function getProfile(userId: string) {
   return publicUser(u);
 }
 
-export async function updateProfile(userId: string, input: { name?: string; phone?: string; currentPassword?: string; newPassword?: string }) {
+export async function updateProfile(
+  userId: string,
+  input: { name?: string; phone?: string; currentPassword?: string; newPassword?: string },
+) {
   const u = await User.findById(userId).select('+passwordHash');
   if (!u) throw ApiError.notFound('User not found');
   if (input.newPassword) {

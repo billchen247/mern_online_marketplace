@@ -108,13 +108,33 @@ a.get('/users', q(v.adminUserQuery), admin.listUsers);
 a.get('/users/:id', admin.getUser);
 a.patch('/users/:id', body(v.adminUserPatchSchema), admin.updateUser);
 a.get('/audit-logs', admin.auditLogs);
-a.get('/seller-applications', q(v.pageQuery.extend({ status: z.enum(['pending', 'approved', 'rejected', 'suspended']).optional() })), admin.listApplications);
+a.get(
+  '/seller-applications',
+  q(v.pageQuery.extend({ status: z.enum(['pending', 'approved', 'rejected', 'suspended']).optional() })),
+  admin.listApplications,
+);
 a.patch('/seller-applications/:id', body(v.reviewApplicationSchema), admin.reviewApplication);
 a.get('/sellers', q(v.pageQuery.extend({ search: z.string().max(100).optional() })), admin.listSellers);
 a.patch('/sellers/:id', body(v.sellerStateSchema), admin.updateSeller);
-a.get('/shops', q(v.pageQuery.extend({ search: z.string().max(100).optional(), status: z.string().optional(), seller: v.objectId.optional() })), admin.listShops);
+a.get(
+  '/shops',
+  q(v.pageQuery.extend({ search: z.string().max(100).optional(), status: z.string().optional(), seller: v.objectId.optional() })),
+  admin.listShops,
+);
 a.patch('/shops/:id', body(v.adminShopPatchSchema), admin.updateShop);
-a.get('/products', q(v.pageQuery.extend({ search: z.string().max(100).optional(), status: z.string().optional(), shop: v.objectId.optional(), seller: v.objectId.optional(), category: v.objectId.optional() })), admin.listProducts);
+a.get(
+  '/products',
+  q(
+    v.pageQuery.extend({
+      search: z.string().max(100).optional(),
+      status: z.string().optional(),
+      shop: v.objectId.optional(),
+      seller: v.objectId.optional(),
+      category: v.objectId.optional(),
+    }),
+  ),
+  admin.listProducts,
+);
 a.patch('/products/:id', body(v.adminProductPatchSchema), admin.updateProduct);
 a.get('/categories', admin.listAllCategories);
 a.post('/categories', body(v.categorySchema), admin.createCategory);

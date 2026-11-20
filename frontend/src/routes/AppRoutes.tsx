@@ -6,7 +6,6 @@ import { MainLayout } from '../layouts/MainLayout';
 import { AccountLayout, AdminLayout, SellerLayout } from '../layouts/portals';
 import { RequireRole } from './guards';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const named = <T extends Record<string, any>>(load: () => Promise<T>, key: keyof T) =>
   lazy(async () => ({ default: (await load())[key] as ComponentType }));
 
@@ -62,9 +61,13 @@ export function NotFoundPage() {
   return (
     <Container sx={{ maxWidth: 'sm', py: 10 }}>
       <Stack spacing={2} sx={{ alignItems: 'center', textAlign: 'center' }}>
-        <Typography variant="h3" component="h1">404</Typography>
+        <Typography variant="h3" component="h1">
+          404
+        </Typography>
         <Typography color="text.secondary">We couldn’t find the page you’re looking for.</Typography>
-        <Button component={RouterLink} to="/" variant="contained">Back to home</Button>
+        <Button component={RouterLink} to="/" variant="contained">
+          Back to home
+        </Button>
       </Stack>
     </Container>
   );

@@ -22,7 +22,11 @@ export async function listPublic(q: { search?: string; page: number; limit: numb
   if (q.seller) filter.seller = q.seller;
   if (q.search) filter.name = new RegExp(escapeRegex(q.search), 'i');
   const [data, total] = await Promise.all([
-    Shop.find(filter).populate('seller', 'name').sort({ createdAt: -1 }).skip((q.page - 1) * q.limit).limit(q.limit),
+    Shop.find(filter)
+      .populate('seller', 'name')
+      .sort({ createdAt: -1 })
+      .skip((q.page - 1) * q.limit)
+      .limit(q.limit),
     Shop.countDocuments(filter),
   ]);
   const counts = await Product.aggregate([
@@ -98,7 +102,11 @@ export async function adminList(q: { search?: string; status?: string; seller?: 
   if (q.seller) filter.seller = q.seller;
   if (q.search) filter.name = new RegExp(escapeRegex(q.search), 'i');
   const [data, total] = await Promise.all([
-    Shop.find(filter).populate('seller', 'name email').sort({ createdAt: -1 }).skip((q.page - 1) * q.limit).limit(q.limit),
+    Shop.find(filter)
+      .populate('seller', 'name email')
+      .sort({ createdAt: -1 })
+      .skip((q.page - 1) * q.limit)
+      .limit(q.limit),
     Shop.countDocuments(filter),
   ]);
   return { data, pagination: buildPagination(q.page, q.limit, total) };

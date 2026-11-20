@@ -74,7 +74,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const value = useMemo<AuthState>(
-    () => ({ user, loading, login, register, logout, refreshUser, hasRole: (r) => hasRole(user, r), hasAnyRole: (r) => hasAnyRole(user, r) }),
+    () => ({
+      user,
+      loading,
+      login,
+      register,
+      logout,
+      refreshUser,
+      hasRole: (r) => hasRole(user, r),
+      hasAnyRole: (r) => hasAnyRole(user, r),
+    }),
     [user, loading, login, register, logout, refreshUser],
   );
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

@@ -16,11 +16,15 @@ const cookieOpts = (): CookieOptions => ({
 
 function sendSession(res: Response, s: Awaited<ReturnType<typeof auth.login>>, message: string, status = 200) {
   res.cookie(COOKIE, s.refreshToken, cookieOpts());
-  return status === 201 ? created(res, message, { user: s.user, accessToken: s.accessToken }) : ok(res, message, { user: s.user, accessToken: s.accessToken });
+  return status === 201
+    ? created(res, message, { user: s.user, accessToken: s.accessToken })
+    : ok(res, message, { user: s.user, accessToken: s.accessToken });
 }
 
 export const register = asyncHandler(async (req, res) => sendSession(res, await auth.register(req.body), 'Registration successful', 201));
-export const login = asyncHandler(async (req, res) => sendSession(res, await auth.login(req.body.email, req.body.password), 'Login successful'));
+export const login = asyncHandler(async (req, res) =>
+  sendSession(res, await auth.login(req.body.email, req.body.password), 'Login successful'),
+);
 export const refresh = asyncHandler(async (req, res) => sendSession(res, await auth.refresh(req.cookies?.[COOKIE]), 'Token refreshed'));
 export const logout = asyncHandler(async (req, res) => {
   await auth.logout(req.cookies?.[COOKIE]);

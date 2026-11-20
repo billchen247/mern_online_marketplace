@@ -28,9 +28,15 @@ export const listReviews = asyncHandler(async (req, res) => {
   const r = await reviews.list(String(req.params.id), req.valid.query);
   return paginated(res, 'Reviews retrieved', r.data, r.pagination);
 });
-export const myReviewState = asyncHandler(async (req, res) => ok(res, 'Review eligibility', await reviews.eligibility(req.user!.id, String(req.params.id))));
-export const createReview = asyncHandler(async (req, res) => created(res, 'Review submitted', await reviews.create(req.user!.id, String(req.params.id), req.body)));
-export const updateReview = asyncHandler(async (req, res) => ok(res, 'Review updated', await reviews.update(req.user!, String(req.params.id), req.body)));
+export const myReviewState = asyncHandler(async (req, res) =>
+  ok(res, 'Review eligibility', await reviews.eligibility(req.user!.id, String(req.params.id))),
+);
+export const createReview = asyncHandler(async (req, res) =>
+  created(res, 'Review submitted', await reviews.create(req.user!.id, String(req.params.id), req.body)),
+);
+export const updateReview = asyncHandler(async (req, res) =>
+  ok(res, 'Review updated', await reviews.update(req.user!, String(req.params.id), req.body)),
+);
 export const deleteReview = asyncHandler(async (req, res) => {
   await reviews.remove(req.user!, String(req.params.id));
   return ok(res, 'Review deleted');

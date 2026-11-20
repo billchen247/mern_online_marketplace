@@ -22,14 +22,14 @@ export function useAsync<T>(fn: () => Promise<T>, deps: unknown[] = []): AsyncSt
     let alive = true;
     setLoading(true);
     setError(null);
-    fnRef.current()
+    fnRef
+      .current()
       .then((d) => alive && setData(d))
       .catch((e) => alive && setError(getErrorMessage(e)))
       .finally(() => alive && setLoading(false));
     return () => {
       alive = false;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [...deps, tick]);
 
   const reload = useCallback(() => setTick((t) => t + 1), []);

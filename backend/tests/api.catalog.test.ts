@@ -12,10 +12,51 @@ async function seedCatalog() {
   const hidden = await makeShop(s2.id, 'Hidden Shop', 'inactive');
   const e = String(electronics._id);
   const f = String(fashion._id);
-  await makeProduct({ seller: s1.id, shop: String(sh1._id), category: e, name: 'Gaming Laptop', price: 1000, stock: 4, ratingAverage: 4.5, ratingCount: 10, salesCount: 30 });
-  await makeProduct({ seller: s1.id, shop: String(sh1._id), category: e, name: 'Office Laptop', price: 600, stock: 0, ratingAverage: 3.2, ratingCount: 5, salesCount: 50 });
-  await makeProduct({ seller: s1.id, shop: String(sh1._id), category: e, name: 'Phone Case', price: 15, stock: 100, description: 'Protects your laptop sleeve phone', ratingAverage: 4.9, ratingCount: 3, salesCount: 5 });
-  await makeProduct({ seller: s2.id, shop: String(sh2._id), category: f, name: 'Silk Scarf', price: 45, stock: 8, ratingAverage: 4, ratingCount: 2, salesCount: 9 });
+  await makeProduct({
+    seller: s1.id,
+    shop: String(sh1._id),
+    category: e,
+    name: 'Gaming Laptop',
+    price: 1000,
+    stock: 4,
+    ratingAverage: 4.5,
+    ratingCount: 10,
+    salesCount: 30,
+  });
+  await makeProduct({
+    seller: s1.id,
+    shop: String(sh1._id),
+    category: e,
+    name: 'Office Laptop',
+    price: 600,
+    stock: 0,
+    ratingAverage: 3.2,
+    ratingCount: 5,
+    salesCount: 50,
+  });
+  await makeProduct({
+    seller: s1.id,
+    shop: String(sh1._id),
+    category: e,
+    name: 'Phone Case',
+    price: 15,
+    stock: 100,
+    description: 'Protects your laptop sleeve phone',
+    ratingAverage: 4.9,
+    ratingCount: 3,
+    salesCount: 5,
+  });
+  await makeProduct({
+    seller: s2.id,
+    shop: String(sh2._id),
+    category: f,
+    name: 'Silk Scarf',
+    price: 45,
+    stock: 8,
+    ratingAverage: 4,
+    ratingCount: 2,
+    salesCount: 9,
+  });
   await makeProduct({ seller: s2.id, shop: String(sh2._id), category: f, name: 'Draft Item', price: 5, stock: 8, status: 'draft' });
   await makeProduct({ seller: s2.id, shop: String(hidden._id), category: f, name: 'Hidden Shop Item', price: 5, stock: 8 });
   return { s1, s2, electronics, fashion, sh1, sh2 };
@@ -47,7 +88,10 @@ describe('product discovery', () => {
     expect((await api().get('/api/v1/products?category=fashion')).body.pagination.total).toBe(1);
     expect((await api().get(`/api/v1/products?shop=${sh2._id}`)).body.pagination.total).toBe(1);
     expect((await api().get(`/api/v1/products?seller=${s2.id}`)).body.pagination.total).toBe(1);
-    expect((await api().get('/api/v1/products?minPrice=40&maxPrice=700')).body.data.map((p: any) => p.name).sort()).toEqual(['Office Laptop', 'Silk Scarf']);
+    expect((await api().get('/api/v1/products?minPrice=40&maxPrice=700')).body.data.map((p: any) => p.name).sort()).toEqual([
+      'Office Laptop',
+      'Silk Scarf',
+    ]);
     expect((await api().get('/api/v1/products?minRating=4.5')).body.data).toHaveLength(2);
     expect((await api().get('/api/v1/products?inStock=true')).body.pagination.total).toBe(3);
     expect((await api().get('/api/v1/products?category=nonexistent')).body.pagination.total).toBe(0);
@@ -88,7 +132,9 @@ describe('product discovery', () => {
   it('home aggregates sections; shops list/detail; settings public', async () => {
     await seedCatalog();
     const h = await api().get('/api/v1/home').expect(200);
-    expect(Object.keys(h.body.data)).toEqual(expect.arrayContaining(['featured', 'popular', 'newArrivals', 'recommended', 'shops', 'categories']));
+    expect(Object.keys(h.body.data)).toEqual(
+      expect.arrayContaining(['featured', 'popular', 'newArrivals', 'recommended', 'shops', 'categories']),
+    );
     const shops = await api().get('/api/v1/shops').expect(200);
     expect(shops.body.pagination.total).toBe(2);
     expect(shops.body.data.find((s: any) => s.name === 'Cat Shop 1').productCount).toBe(3);
@@ -105,12 +151,28 @@ describe('categories', () => {
     const admin = await makeAdmin();
     const seller = await makeSeller();
     await api().post('/api/v1/admin/categories').set('Authorization', seller.auth).send({ name: 'X' }).expect(403);
-    const c = await api().post('/api/v1/admin/categories').set('Authorization', admin.auth).send({ name: 'Toys', description: 'fun' }).expect(201);
+    const c = await api()
+      .post('/api/v1/admin/categories')
+      .set('Authorization', admin.auth)
+      .send({ name: 'Toys', description: 'fun' })
+      .expect(201);
     expect(c.body.data.slug).toBe('toys');
     await api().post('/api/v1/admin/categories').set('Authorization', admin.auth).send({ name: 'Toys' }).expect(409);
-    const child = await api().post('/api/v1/admin/categories').set('Authorization', admin.auth).send({ name: 'Puzzles', parentCategory: c.body.data._id }).expect(201);
-    await api().patch(`/api/v1/admin/categories/${c.body.data._id}`).set('Authorization', admin.auth).send({ parentCategory: c.body.data._id }).expect(400);
-    await api().patch(`/api/v1/admin/categories/${c.body.data._id}`).set('Authorization', admin.auth).send({ name: 'Toys & Games' }).expect(200);
+    const child = await api()
+      .post('/api/v1/admin/categories')
+      .set('Authorization', admin.auth)
+      .send({ name: 'Puzzles', parentCategory: c.body.data._id })
+      .expect(201);
+    await api()
+      .patch(`/api/v1/admin/categories/${c.body.data._id}`)
+      .set('Authorization', admin.auth)
+      .send({ parentCategory: c.body.data._id })
+      .expect(400);
+    await api()
+      .patch(`/api/v1/admin/categories/${c.body.data._id}`)
+      .set('Authorization', admin.auth)
+      .send({ name: 'Toys & Games' })
+      .expect(200);
     await api().delete(`/api/v1/admin/categories/${c.body.data._id}`).set('Authorization', admin.auth).expect(409); // has child
     const shop = await makeShop(seller.id);
     await makeProduct({ seller: seller.id, shop: String(shop._id), category: child.body.data._id });

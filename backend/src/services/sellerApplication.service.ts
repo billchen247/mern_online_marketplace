@@ -63,9 +63,16 @@ export async function review(adminId: string, id: string, input: { status: 'appr
 
 export async function listSellers(q: { search?: string; page: number; limit: number }) {
   const filter: Record<string, any> = { roles: 'seller' };
-  if (q.search) filter.$or = [{ name: new RegExp(q.search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i') }, { email: new RegExp(q.search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i') }];
+  if (q.search)
+    filter.$or = [
+      { name: new RegExp(q.search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i') },
+      { email: new RegExp(q.search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i') },
+    ];
   const [users, total] = await Promise.all([
-    User.find(filter).sort({ createdAt: -1 }).skip((q.page - 1) * q.limit).limit(q.limit),
+    User.find(filter)
+      .sort({ createdAt: -1 })
+      .skip((q.page - 1) * q.limit)
+      .limit(q.limit),
     User.countDocuments(filter),
   ]);
   const data = await Promise.all(
@@ -89,7 +96,10 @@ export async function setSellerState(adminId: string, userId: string, action: 's
     if (!user.roles.includes('seller')) throw ApiError.conflict('User is not an active seller');
     await User.updateOne({ _id: userId }, { $pull: { roles: 'seller' } });
     await Shop.updateMany({ seller: userId, status: 'active' }, { $set: { status: 'suspended' } });
-    await SellerApplication.updateMany({ user: userId, applicationStatus: 'approved' }, { $set: { applicationStatus: 'suspended', reviewNotes: notes } });
+    await SellerApplication.updateMany(
+      { user: userId, applicationStatus: 'approved' },
+      { $set: { applicationStatus: 'suspended', reviewNotes: notes } },
+    );
   } else {
     const suspended = await SellerApplication.findOne({ user: userId, applicationStatus: 'suspended' });
     if (!suspended) throw ApiError.conflict('Seller is not suspended');
