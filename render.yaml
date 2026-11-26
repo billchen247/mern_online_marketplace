@@ -5,7 +5,7 @@ services:
     runtime: node
     plan: free
     rootDir: .
-    buildCommand: npm ci --include=dev && npm run build -w backend
+    buildCommand: npm install  --include=dev && npm run build -w backend
     startCommand: npm run start -w backend
     healthCheckPath: /health
     envVars:
@@ -39,7 +39,7 @@ services:
     name: marketplace-web
     runtime: static
     rootDir: .
-    buildCommand: npm ci --include=dev && npm run build -w frontend
+    buildCommand: npm install  --include=dev && npm run build -w frontend
     staticPublishPath: frontend/dist
     envVars:
       # e.g. https://marketplace-api.onrender.com/api/v1  (baked in at build time)

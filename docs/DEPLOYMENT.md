@@ -10,6 +10,8 @@
 ## 2. Create the Blueprint
 Render → *New → Blueprint* → pick this repo. Render reads `render.yaml`.
 
+Both services install dependencies without a lockfile. Deployments can therefore resolve different dependency versions over time, including transitive dependencies.
+
 ### API service environment
 | Key | Value |
 | --- | --- |
