@@ -71,7 +71,7 @@ Backend variables live in `backend/.env` (git-ignored; template in `backend/.env
 | `CLOUDINARY_*`                          | Optional. Without them uploads fall back to local disk (`backend/uploads`, ephemeral on Render)   |
 | `ALLOW_SEED`                            | Must be `true` for destructive `npm run seed -- --reset`; refused in production                   |
 
-Frontend: `VITE_API_BASE_URL` (defaults to `http://localhost:5000/api/v1`).
+Frontend: `VITE_API_BASE_URL` (defaults to `http://localhost:3000/api/v1`).
 
 > **Atlas note:** Atlas only accepts connections from allow-listed IPs. Add your IP under *Network Access* before running `npm run seed` or `npm run dev` against it.
 

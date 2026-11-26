@@ -24,7 +24,7 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     // same origin as the mocked API so jsdom XHR does not trigger CORS
-    environmentOptions: { jsdom: { url: 'http://localhost:5000/' } },
+    environmentOptions: { jsdom: { url: 'http://localhost:3000/' } },
     globals: true,
     setupFiles: ['tests/setup.ts'],
     testTimeout: 30000,

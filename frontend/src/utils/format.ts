@@ -10,7 +10,7 @@ export const formatDateTime = (iso?: string) =>
 export const titleCase = (s: string) => s.replace(/[_-]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 
 /** Resolve image URLs: server-hosted `/uploads/...` files live on the API origin. */
-export function apiOrigin(base = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5000/api/v1'): string {
+export function apiOrigin(base = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:3000/api/v1'): string {
   return base.replace(/\/api\/v1\/?$/, '');
 }
 export function imageUrl(url?: string | null): string {

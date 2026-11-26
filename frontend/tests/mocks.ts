@@ -1,7 +1,7 @@
 import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 
-export const BASE = 'http://localhost:5000/api/v1';
+export const BASE = 'http://localhost:3000/api/v1';
 export const ok = (data: unknown, message = 'ok') => HttpResponse.json({ success: true, message, data });
 export const paged = (items: unknown[], page = 1, limit = 10) =>
   HttpResponse.json({
