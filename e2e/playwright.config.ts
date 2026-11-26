@@ -12,7 +12,16 @@ export default defineConfig({
   expect: { timeout: 10_000 },
   reporter: process.env.CI ? [['list'], ['html', { open: 'never' }]] : [['list']],
   use: { baseURL: `http://localhost:${WEB_PORT}`, trace: 'retain-on-failure', screenshot: 'only-on-failure' },
-  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
+  projects: [
+    {
+      name: 'chromium',
+      use: {
+        ...devices['Desktop Chrome'],
+        // Playwright no longer publishes a bundled Chromium for macOS 13 ARM64.
+        channel: process.platform === 'darwin' ? 'chrome' : undefined,
+      },
+    },
+  ],
   // Self-contained: API runs against a throw-away in-memory MongoDB (seeded); never touches Atlas.
   webServer: [
     {
