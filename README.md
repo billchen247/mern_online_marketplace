@@ -26,6 +26,12 @@ docs/         ARCHITECTURE, DATABASE, API, DEPLOYMENT, TESTING, PERFORMANCE
 render.yaml   Render blueprint (static site + web service)
 ```
 
+Frontend React components live in individual files under `frontend/src/pages`,
+`frontend/src/components`, and `frontend/src/layouts`. Page folders group the
+public, account, seller, and admin experiences; shared state providers and
+route guards live in `contexts/` and `routes/`. Related frontend tests are in
+`frontend/tests/`.
+
 ## Quick start
 
 Requires Node 22+ and npm 10+.
