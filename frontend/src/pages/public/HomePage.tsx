@@ -1,56 +1,15 @@
-import ArrowForward from '@mui/icons-material/ArrowForward';
 import LocalShipping from '@mui/icons-material/LocalShippingOutlined';
 import Verified from '@mui/icons-material/VerifiedUserOutlined';
 import Storefront from '@mui/icons-material/Storefront';
 import { Avatar, Box, Button, Card, CardActionArea, CardContent, Chip, Container, Stack, Typography } from '@mui/material';
-import type { ReactNode } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import { catalogApi } from '../../api/services';
-import { ProductCard, productGridSx } from '../../components/ProductCard';
 import { AsyncView, ProductGridSkeleton } from '../../components/StateViews';
 import { useSettings } from '../../contexts/SettingsContext';
 import { useAsync } from '../../hooks/useAsync';
-import type { Product } from '../../types';
 import { imageUrl } from '../../utils/format';
-
-function Section({ title, to, products }: { title: string; to?: string; products: Product[] }) {
-  if (products.length === 0) return null;
-  return (
-    <Box component="section" aria-label={title} sx={{ mb: 5 }}>
-      <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-        <Typography variant="h5" component="h2" sx={{ fontWeight: 700 }}>
-          {title}
-        </Typography>
-        {to && (
-          <Button component={RouterLink} to={to} endIcon={<ArrowForward />}>
-            View all
-          </Button>
-        )}
-      </Stack>
-      <Box sx={productGridSx}>
-        {products.map((p) => (
-          <ProductCard key={p._id} product={p} />
-        ))}
-      </Box>
-    </Box>
-  );
-}
-
-function Promo({ icon, title, text, bg }: { icon: ReactNode; title: string; text: string; bg: string }) {
-  return (
-    <Card sx={{ bgcolor: bg, color: 'white' }} elevation={0}>
-      <CardContent>
-        <Stack direction="row" spacing={2} sx={{ alignItems: 'center' }}>
-          {icon}
-          <Box>
-            <Typography sx={{ fontWeight: 700 }}>{title}</Typography>
-            <Typography variant="body2">{text}</Typography>
-          </Box>
-        </Stack>
-      </CardContent>
-    </Card>
-  );
-}
+import { Promo } from './Promo';
+import { Section } from './Section';
 
 export default function HomePage() {
   const state = useAsync(() => catalogApi.home(), []);

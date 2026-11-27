@@ -1,25 +1,5 @@
 import FilterList from '@mui/icons-material/FilterList';
-import {
-  Box,
-  Button,
-  Checkbox,
-  Chip,
-  Container,
-  Drawer,
-  FormControl,
-  FormControlLabel,
-  IconButton,
-  InputLabel,
-  MenuItem,
-  Rating,
-  Select,
-  Slider,
-  Stack,
-  TextField,
-  Typography,
-  useMediaQuery,
-  useTheme,
-} from '@mui/material';
+import { Box, Button, Checkbox, Chip, Container, Drawer, FormControl, FormControlLabel, IconButton, InputLabel, MenuItem, Rating, Select, Slider, Stack, TextField, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { catalogApi } from '../../api/services';
@@ -27,7 +7,9 @@ import { EmptyState, ErrorState, ProductGridSkeleton } from '../../components/St
 import { Pager } from '../../components/common';
 import { ProductCard, productGridSx } from '../../components/ProductCard';
 import { useAsync } from '../../hooks/useAsync';
-import type { ProductQuery } from '../../types';
+import { paramsToQuery } from './productQuery';
+
+export { paramsToQuery } from './productQuery';
 
 const SORTS = [
   { value: 'newest:desc', label: 'Newest' },
@@ -36,24 +18,6 @@ const SORTS = [
   { value: 'price:asc', label: 'Price: low to high' },
   { value: 'price:desc', label: 'Price: high to low' },
 ];
-
-/** Parses URL search params into the backend product query (all filtering is server-side). */
-export function paramsToQuery(sp: URLSearchParams): ProductQuery {
-  const num = (k: string) => (sp.get(k) !== null && sp.get(k) !== '' && !Number.isNaN(Number(sp.get(k))) ? Number(sp.get(k)) : undefined);
-  return {
-    page: num('page') ?? 1,
-    limit: 12,
-    search: sp.get('search') ?? undefined,
-    category: sp.get('category') ?? undefined,
-    shop: sp.get('shop') ?? undefined,
-    minPrice: num('minPrice'),
-    maxPrice: num('maxPrice'),
-    minRating: num('minRating'),
-    inStock: sp.get('inStock') === 'true' ? true : undefined,
-    sortBy: (sp.get('sortBy') as ProductQuery['sortBy']) ?? 'newest',
-    order: (sp.get('order') as ProductQuery['order']) ?? (sp.get('sortBy') === 'price' ? 'asc' : 'desc'),
-  };
-}
 
 export default function ProductListPage() {
   const [sp, setSp] = useSearchParams();

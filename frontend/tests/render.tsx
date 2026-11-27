@@ -1,7 +1,7 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import type { ReactElement } from 'react';
-import { Providers } from '../src/App';
+import { Providers } from '../src/Providers';
 import { loginAs, type Persona } from './mocks';
 
 export function renderApp(ui: ReactElement, opts: { route?: string; as?: Persona | null } = {}) {

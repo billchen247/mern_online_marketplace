@@ -187,7 +187,7 @@ describe('forms', () => {
 });
 
 // helpers kept at the bottom to keep the tests readable
-import { Providers } from '../src/App';
+import { Providers } from '../src/Providers';
 import * as React from 'react';
 function require_react() {
   return React;

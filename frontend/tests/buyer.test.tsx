@@ -10,10 +10,12 @@ import type { Persona } from './mocks';
 
 const show = (route: string, as: Persona | null = null) => renderApp(<AppRoutes />, { route, as });
 const T = { timeout: 15000 };
-const Where = () => <span data-testid="where">{useLocation().pathname}</span>;
+const Where = () => {
+  const { pathname, search } = useLocation();
+  return <span data-testid="where">{pathname + search}</span>;
+};
 void Routes;
 void Route;
-void Where;
 
 describe('login & register', () => {
   it('shows validation errors for empty login', async () => {
@@ -34,6 +36,19 @@ describe('login & register', () => {
     await userEvent.type(screen.getByLabelText(/^Password/), 'Password123');
     await userEvent.click(screen.getByRole('button', { name: 'Sign in' }));
     await waitFor(() => expect(screen.queryByRole('button', { name: 'Sign in' })).not.toBeInTheDocument(), T);
+  });
+  it('returns to the requested account page after login', async () => {
+    renderApp(
+      <>
+        <AppRoutes />
+        <Where />
+      </>,
+      { route: '/account/profile?tab=details' },
+    );
+    await userEvent.type(await screen.findByLabelText(/Email/), 'alice@example.com');
+    await userEvent.type(screen.getByLabelText(/^Password/), 'Password123');
+    await userEvent.click(screen.getByRole('button', { name: 'Sign in' }));
+    await waitFor(() => expect(screen.getByTestId('where')).toHaveTextContent('/account/profile?tab=details'), T);
   });
   it('registers a new account', async () => {
     show('/register');
